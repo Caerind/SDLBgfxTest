@@ -1,5 +1,10 @@
-#include <SDL.h>
 #include <cassert>
+
+#include <SDL.h>
+#include <SDL_syswm.h>
+
+#include <bgfx/bgfx.h>
+#include <bgfx/platform.h>
 
 class SDL
 {
@@ -33,6 +38,11 @@ private:
     SDL() 
         : mInitialized(false) 
     {
+    }
+
+    ~SDL()
+    {
+        assert(!mInitialized);
     }
 
 	static SDL& GetInstance()
@@ -119,7 +129,8 @@ class Window
 public:
     Window()
         : mWindow(nullptr)
-        , mSurface()
+        , mWidth(0)
+        , mHeight(0)
     {
     }
 
@@ -132,9 +143,9 @@ public:
     {
 		mWindow = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
         if (IsOpen())
-        {
-			mSurface.InitializeWindowSurface(SDL_GetWindowSurface(mWindow));
-			SDL_UpdateWindowSurface(mWindow);
+		{
+            mWidth = width;
+            mHeight = height;
         }
         return IsOpen();
     }
@@ -173,12 +184,101 @@ public:
         }
 	}
 
-    Surface& GetSurface() { return mSurface; }
-    const Surface& GetSurface() const { return mSurface; }
+    int GetWidth() const { return mWidth; }
+    int GetHeight() const { return mHeight; }
 
 private:
+    friend class Bgfx;
+
     SDL_Window* mWindow;
-    Surface mSurface;
+    int mWidth;
+    int mHeight;
+};
+
+class Bgfx
+{
+public:
+	static bool Init(Window& window)
+	{
+        assert(!GetInstance().mInitialized);
+
+		SDL_SysWMinfo wmi;
+		SDL_VERSION(&wmi.version);
+		if (!SDL_GetWindowWMInfo(window.mWindow, &wmi))
+		{
+			return false;
+		}
+
+		bgfx::PlatformData pd;
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+		pd.ndt = wmi.info.x11.display;
+		pd.nwh = (void*)(uintptr_t)wmi.info.x11.window;
+#elif BX_PLATFORM_OSX
+		pd.ndt = NULL;
+		pd.nwh = wmi.info.cocoa.window;
+#elif BX_PLATFORM_WINDOWS
+		pd.ndt = NULL;
+		pd.nwh = wmi.info.win.window;
+#elif BX_PLATFORM_STEAMLINK
+		pd.ndt = wmi.info.vivante.display;
+		pd.nwh = wmi.info.vivante.window;
+#endif // BX_PLATFORM_
+		pd.context = NULL;
+		pd.backBuffer = NULL;
+		pd.backBufferDS = NULL;
+		bgfx::setPlatformData(pd);
+
+        bgfx::renderFrame();
+
+		bgfx::Init init;
+		init.type = bgfx::RendererType::Count; // Automatically choose a renderer
+		init.resolution.width = window.GetWidth();
+		init.resolution.height = window.GetHeight();
+		init.resolution.reset = BGFX_RESET_VSYNC;
+		bgfx::init(init);
+		//bgfx::reset(window.GetWidth(), window.GetHeight(), BGFX_RESET_VSYNC); // TODO: Is it needed ?
+
+		bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
+
+		bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF /*purple*/, 1.f, 0);
+		bgfx::setViewRect(0, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));
+		// bgfx::frame(); // TODO: Is it needed/better ?
+
+        GetInstance().mInitialized = true;
+        return true;
+	}
+
+    static bool IsInitialized()
+    {
+        return GetInstance().mInitialized;
+    }
+
+    static bool Release()
+    {
+		assert(GetInstance().mInitialized);
+		GetInstance().mInitialized = false;
+        bgfx::shutdown();
+		return true;
+    }
+
+private:
+    Bgfx()
+        : mInitialized(false)
+    {
+    }
+
+    ~Bgfx()
+    {
+        assert(!mInitialized);
+    }
+
+    static Bgfx& GetInstance()
+    {
+        static Bgfx instance;
+        return instance;
+    }
+
+    bool mInitialized;
 };
 
 int main(int argc, char** argv)
@@ -191,14 +291,9 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        Surface image;
-        if (!image.CreateFromBMP("test.bmp"))
-        {
-            return -1;
-        }
+        Bgfx::Init(window);
 
-        image.CopyTo(window.GetSurface());
-
+        int counter = 0;
         while (window.IsOpen())
         {
             SDL_Event event;
@@ -228,10 +323,11 @@ int main(int argc, char** argv)
                 break;
             }
 
-			SDL_Delay(16);
-
-			window.Display();
+			bgfx::dbgTextClear();
+			bgfx::frame();
         }
+
+        Bgfx::Release();
     }
     SDL::Release();
 	return 0;

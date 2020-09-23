@@ -10,4 +10,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_subdirectory(SDL)
+add_subdirectory(bgfx)
 add_subdirectory(SDLBgfxTest)
