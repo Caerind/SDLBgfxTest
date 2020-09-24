@@ -1,4 +1,4 @@
-#include <cassert>
+#pragma once
 
 #include <SDL.h>
 
@@ -7,79 +7,22 @@
 class SDL
 {
 public:
-	static bool Init(unsigned int initFlags = SDL_INIT_EVERYTHING)
-	{
-		SDL& sdl = GetInstance();
+    static bool Init(unsigned int initFlags = SDL_INIT_EVERYTHING);
+    static bool IsInitialized();
+    static bool Release();
 
-		assert(!sdl.mInitialized);
+    static bool PollEvent(SDL_Event& event);
+    static bool WaitEvent(SDL_Event& event, int timeoutMs = -1);
 
-		sdl.mInitialized = SDL_Init(initFlags) >= 0;
-		if (sdl.mInitialized)
-		{
-			sdl.mInitFlags = initFlags;
-			return true;
-		}
-		else
-		{
-			sdl.mInitFlags = 0;
-			return false;
-		}
-	}
+    static const char* GetError();
 
-	static bool IsInitialized()
-	{
-		return GetInstance().mInitialized;
-	}
-
-	static bool Release()
-	{
-		SDL& sdl = GetInstance();
-
-		assert(sdl.mInitialized);
-
-		SDL_Quit();
-		sdl.mInitialized = false;
-
-		return true;
-	}
-
-	static bool PollEvent(SDL_Event& event)
-	{
-		return GetInstance().mInitialized && SDL_PollEvent(&event) > 0;
-	}
-
-	static bool WaitEvent(SDL_Event& event, int timeoutMs = -1)
-	{
-		return GetInstance().mInitialized && SDL_WaitEventTimeout(&event, timeoutMs) > 0;
-	}
-
-	static const char* GetError()
-	{
-		return SDL_GetError();
-	}
-
-	static unsigned int GetInitFlags()
-	{
-		return GetInstance().mInitFlags;
-	}
+    static unsigned int GetInitFlags();
 
 private:
-	SDL()
-		: mInitialized(false)
-		, mInitFlags(0)
-	{
-	}
+    static SDL& GetInstance();
 
-	~SDL()
-	{
-		assert(!mInitialized);
-	}
-
-	static SDL& GetInstance()
-	{
-		static SDL instance;
-		return instance;
-	}
+    SDL();
+    ~SDL();
 
 	bool mInitialized;
 	unsigned int mInitFlags;
