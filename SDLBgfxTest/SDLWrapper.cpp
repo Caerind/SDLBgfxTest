@@ -1,11 +1,11 @@
-#include "SDL.hpp"
+#include "SDLWrapper.hpp"
 
-#include <cassert>
-#include <cstdio>
-
-bool SDL::Init(unsigned int initFlags /*= SDL_INIT_EVERYTHING*/)
+namespace NAMESPACE_NAME
 {
-    SDL& sdl = GetInstance();
+
+bool SDLWrapper::Init(U32 initFlags /*= SDL_INIT_EVERYTHING*/)
+{
+    SDLWrapper& sdl = GetInstance();
 
     assert(!sdl.mInitialized);
 
@@ -22,14 +22,14 @@ bool SDL::Init(unsigned int initFlags /*= SDL_INIT_EVERYTHING*/)
     }
 }
 
-bool SDL::IsInitialized()
+bool SDLWrapper::IsInitialized()
 {
     return GetInstance().mInitialized;
 }
 
-bool SDL::Release()
+bool SDLWrapper::Release()
 {
-    SDL& sdl = GetInstance();
+    SDLWrapper& sdl = GetInstance();
 
     assert(sdl.mInitialized);
 
@@ -39,43 +39,41 @@ bool SDL::Release()
     return true;
 }
 
-bool SDL::PollEvent(SDL_Event& event)
+bool SDLWrapper::PollEvent(SDL_Event& event)
 {
     return GetInstance().mInitialized && SDL_PollEvent(&event) > 0;
 }
 
-bool SDL::WaitEvent(SDL_Event& event, int timeoutMs /*= -1*/)
+bool SDLWrapper::WaitEvent(SDL_Event& event, I32 timeoutMs /*= -1*/)
 {
     return GetInstance().mInitialized && SDL_WaitEventTimeout(&event, timeoutMs) > 0;
 }
 
-const char* SDL::GetError()
+const char* SDLWrapper::GetError()
 {
     return SDL_GetError();
 }
 
-unsigned int SDL::GetInitFlags()
+U32 SDLWrapper::GetInitFlags()
 {
     return GetInstance().mInitFlags;
 }
 
-SDL& SDL::GetInstance()
+SDLWrapper& SDLWrapper::GetInstance()
 {
-    static SDL instance;
+    static SDLWrapper instance;
     return instance;
 }
 
-SDL::SDL()
+SDLWrapper::SDLWrapper()
     : mInitialized(false)
     , mInitFlags(0)
 {
 }
 
-SDL::~SDL()
+SDLWrapper::~SDLWrapper()
 {
-    if (mInitialized)
-    {
-        printf("SDL hasn't been released\n");
-        assert(false);
-    }
+    assert(!mInitialized);
 }
+
+} // namespace NAMESPACE_NAME

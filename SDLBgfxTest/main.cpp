@@ -1,13 +1,34 @@
-#include <cassert>
-#include <cstdio>
+#include "EngineIntegration.hpp"
 
-#include "SDL.hpp"
+#include "SDLWrapper.hpp"
 #include "Window.hpp"
-#include "Bgfx.hpp"
+#include "BgfxWrapper.hpp"
+#include "ImGuiWrapper.hpp"
+
+using namespace NAMESPACE_NAME;
+
+struct PosColorVertex
+{
+    F32 x;
+    F32 y;
+    F32 z;
+    U32 abgr;
+
+    static const bgfx::VertexLayout kLayout; 
+};
+const bgfx::VertexLayout PosColorVertex::kLayout = []()
+{
+	bgfx::VertexLayout layout;
+	layout.begin();
+	layout.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float);
+	layout.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true);
+	layout.end();
+	return layout;
+}();
 
 int main(int argc, char** argv)
 {
-    SDL::Init();
+    SDLWrapper::Init();
     {
         Window window;
         if (!window.Create("SDL & bgfx", 800, 600))
@@ -15,13 +36,15 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        Bgfx::Init(window);
+		BgfxWrapper::Init(window);
+#ifdef ENGINE_IMGUI
+        ImGuiWrapper::Init();
+#endif // ENGINE_IMGUI
 
-        int counter = 0;
         while (window.IsOpen())
         {
             SDL_Event event;
-            while (SDL::PollEvent(event))
+            while (SDLWrapper::PollEvent(event))
             {
                 switch (event.type)
                 {
@@ -46,15 +69,16 @@ int main(int argc, char** argv)
                 break;
             }
 
-            bgfx::touch(Bgfx::kClearView);
+            bgfx::touch(BgfxWrapper::kClearView);
 			bgfx::dbgTextClear();
 			bgfx::frame();
         }
 
-        Bgfx::Release();
+#ifdef ENGINE_IMGUI
+        ImGuiWrapper::Release();
+#endif // ENGINE_IMGUI
+        BgfxWrapper::Release();
     }
-    SDL::Release();
-    
-    printf("Exit properly\n");
+    SDLWrapper::Release();
     return 0;
 }

@@ -2,18 +2,21 @@
 
 #include <SDL.h>
 
+#include "EngineIntegration.hpp"
+
 // TODO : https://alexandre-laurent.developpez.com/tutoriels/sdl-2/creer-premieres-fenetres
+
+namespace NAMESPACE_NAME
+{
 
 class Window
 {
 public:
     Window();
-
-    Window(const char* name, int width, int height);
-
+    Window(const char* name, I32 width, I32 height);
     ~Window();
 
-    bool Create(const char* name, int width, int height, unsigned int flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    bool Create(const char* name, I32 width, I32 height, U32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
     void Close();
 
@@ -27,18 +30,20 @@ public:
     bool IsMinimized() const;
     bool IsMaximized() const;
 
-    void SetSize(int width, int height);
-    int GetWidth() const;
-    int GetHeight() const;
-    void GetSize(int& width, int& height);
+    void SetSize(I32 width, I32 height);
+    I32 GetWidth() const;
+    I32 GetHeight() const;
+    void GetSize(I32& width, I32& height);
 
     void SetTitle(const char* title);
     const char* GetTitle() const;
 
-    unsigned int GetFlags() const;
+    U32 GetFlags() const;
 
 private:
-    friend class Bgfx;
+    friend class BgfxWrapper;
 
     SDL_Window* mWindow;
 };
+
+} // namespace NAMESPACE_NAME

@@ -1,13 +1,14 @@
 #include "Window.hpp"
 
-#include <cassert>
+namespace NAMESPACE_NAME
+{
 
 Window::Window()
     : mWindow(nullptr)
 {
 }
 
-Window::Window(const char* name, int width, int height)
+Window::Window(const char* name, I32 width, I32 height)
     : Window()
 {
     Create(name, width, height);
@@ -18,7 +19,7 @@ Window::~Window()
     Close();
 }
 
-bool Window::Create(const char* name, int width, int height, unsigned int flags /*= SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE*/)
+bool Window::Create(const char* name, I32 width, I32 height, U32 flags /*= SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE*/)
 {
     mWindow = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
     return mWindow != nullptr;
@@ -84,7 +85,7 @@ bool Window::IsMaximized() const
     return (mWindow != nullptr) ? (SDL_GetWindowFlags(mWindow) & SDL_WINDOW_MAXIMIZED) > 0 : false;
 }
 
-void Window::SetSize(int width, int height)
+void Window::SetSize(I32 width, I32 height)
 {
     if (mWindow != nullptr)
     {
@@ -92,11 +93,11 @@ void Window::SetSize(int width, int height)
     }
 }
 
-int Window::GetWidth() const
+I32 Window::GetWidth() const
 {
     if (mWindow != nullptr)
     {
-        int width, dummy;
+        I32 width, dummy;
         SDL_GetWindowSize(mWindow, &width, &dummy);
         return width;
     }
@@ -106,11 +107,11 @@ int Window::GetWidth() const
     }
 }
 
-int Window::GetHeight() const
+I32 Window::GetHeight() const
 {
     if (mWindow != nullptr)
     {
-        int dummy, height;
+        I32 dummy, height;
         SDL_GetWindowSize(mWindow, &dummy, &height);
         return height;
     }
@@ -120,7 +121,7 @@ int Window::GetHeight() const
     }
 }
 
-void Window::GetSize(int& width, int& height)
+void Window::GetSize(I32& width, I32& height)
 {
     if (mWindow != nullptr)
     {
@@ -146,7 +147,9 @@ const char* Window::GetTitle() const
     return (mWindow != nullptr) ? SDL_GetWindowTitle(mWindow) : "";
 }
 
-unsigned int Window::GetFlags() const
+U32 Window::GetFlags() const
 {
     return (mWindow != nullptr) ? SDL_GetWindowFlags(mWindow) : 0;
 }
+
+} // namespace NAMESPACE_NAME
