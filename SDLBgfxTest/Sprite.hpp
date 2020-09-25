@@ -14,23 +14,43 @@ public:
 	Sprite();
 	~Sprite();
 
-	void Render();
+	//void SetTexture(TexturePtr texture);
+	//TexturePtr GetTexture() const;
+
+	void SetTextureRect(I32 x, I32 y, I32 w, I32 h);
+	void GetTextureRect(I32& x, I32& y, I32& w, I32& h) const;
+
+	void GetBounds(F32& minX, F32& minY, F32& maxX, F32& maxY) const;
+
+	void Render() const;
 
 private:
-	friend class BgfxWrapper;
+	void Update();
 
+private:
 	struct Vertex
 	{
 		F32 x;
 		F32 y;
-		U32 abgr;
+		F32 u;
+		F32 v;
 
 		static const bgfx::VertexLayout kLayout;
 	};
-	static const Vertex kVertices[4]; 
+
+	Vertex mVertices[4];
+	//TexturePtr mTexture;
+	I32 mRectX;
+	I32 mRectY;
+	I32 mRectW;
+	I32 mRectH;
+	bgfx::VertexBufferHandle mBuffer; // TODO : Move this outside to batch
+
+private:
+	friend class BgfxWrapper;
+
 	static const U16 kIndices[6];
 	static Shader kShader;
-	static bgfx::VertexBufferHandle kVertexBuffer;
 	static bgfx::IndexBufferHandle kIndexBuffer;
 	static bool InitializeSprites();
 };

@@ -5,8 +5,6 @@
 #include <cstring>
 #include <cstdlib>
 
-#include <functional>
-
 #if unix || __unix || __unix__ || __linux__ || linux || __linux || __FreeBSD__
 	#define ENGINE_PLATFORM_X11
 	#define ENGINE_PLATFORM_WAYLAND

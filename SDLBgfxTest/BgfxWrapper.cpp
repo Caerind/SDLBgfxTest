@@ -141,8 +141,6 @@ bool BgfxWrapper::Init(Window& window)
     pd.backBufferDS = NULL;
     bgfx::setPlatformData(pd);
 
-    bgfx::renderFrame();
-
     bgfx::Init init;
     init.type = bgfx::RendererType::Count; // Automatically choose a renderer
     init.resolution.width = window.GetWidth();

@@ -22,6 +22,11 @@ bool Shader::Initialize(const char* vertexModule /*=nullptr*/, const char* fragm
 		mFragmentModule = CreateModule(fragmentModule);
 	}
 
+	if (!bgfx::isValid(mVertexModule))
+	{
+		return false;
+	}
+
 	mShaderProgram = bgfx::createProgram(mVertexModule, mFragmentModule, true);
 	return bgfx::isValid(mShaderProgram);
 }
@@ -48,44 +53,14 @@ bgfx::ShaderHandle Shader::CreateModule(const char* filename)
 		return BGFX_INVALID_HANDLE;
 	}
 
-	const char* shaderPath = "";
-	switch (bgfx::getRendererType()) 
+	FILE* file = fopen(filename, "rb");
+	if (file == nullptr)
 	{
-	case bgfx::RendererType::Noop:
 		return BGFX_INVALID_HANDLE;
-	case bgfx::RendererType::Direct3D9:  
-		shaderPath = "shaders/dx9/";   
-		break;
-	case bgfx::RendererType::Direct3D11:
-	case bgfx::RendererType::Direct3D12: 
-		shaderPath = "shaders/dx11/";  
-		break;
-	case bgfx::RendererType::Gnm:        
-		shaderPath = "shaders/pssl/";  
-		break;
-	case bgfx::RendererType::Metal:      
-		shaderPath = "shaders/metal/"; 
-		break;
-	case bgfx::RendererType::OpenGL:     
-		shaderPath = "shaders/glsl/";  
-		break;
-	case bgfx::RendererType::OpenGLES:   
-		shaderPath = "shaders/essl/";  
-		break;
-	case bgfx::RendererType::Vulkan:     
-		shaderPath = "shaders/spirv/"; 
-		break;
 	}
 
-	size_t shaderLen = strlen(shaderPath);
-	size_t fileLen = strlen(filename);
-	char* filePath = (char*)malloc(shaderLen + fileLen);
-	memcpy(filePath, shaderPath, shaderLen);
-	memcpy(&filePath[shaderLen], filename, fileLen);
-
-	FILE* file = fopen(filename, "rb");
 	fseek(file, 0, SEEK_END);
-	long fileSize = ftell(file);
+	std::size_t fileSize = static_cast<std::size_t>(ftell(file));
 	fseek(file, 0, SEEK_SET);
 
 	const bgfx::Memory* mem = bgfx::alloc(fileSize + 1);
@@ -93,7 +68,12 @@ bgfx::ShaderHandle Shader::CreateModule(const char* filename)
 	mem->data[mem->size - 1] = '\0';
 	fclose(file);
 
-	return bgfx::createShader(mem);
+	bgfx::ShaderHandle shaderHandle = bgfx::createShader(mem);
+	if (bgfx::isValid(shaderHandle))
+	{
+		bgfx::setName(shaderHandle, filename);
+	}
+	return shaderHandle;
 }
 
 } // namespace NAMESPACE_NAME
