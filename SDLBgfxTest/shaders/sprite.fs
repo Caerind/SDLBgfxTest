@@ -1,4 +1,4 @@
-$input sprite_texcoord0
+$input v_texcoord0
 
 #include <bgfx_shader.sh>
 

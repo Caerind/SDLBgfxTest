@@ -20,7 +20,8 @@ public:
 	void SetTextureRect(I32 x, I32 y, I32 w, I32 h);
 	void GetTextureRect(I32& x, I32& y, I32& w, I32& h) const;
 
-	void GetBounds(F32& minX, F32& minY, F32& maxX, F32& maxY) const;
+	void GetLocalBounds(F32& minX, F32& minY, F32& maxX, F32& maxY) const;
+	void GetGlobalBounds(F32& minX, F32& minY, F32& maxX, F32& maxY) const;
 
 	void Render() const;
 
@@ -32,12 +33,14 @@ private:
 	{
 		F32 x;
 		F32 y;
+		F32 z;
 		F32 u;
 		F32 v;
 
-		static const bgfx::VertexLayout kLayout;
+		static bgfx::VertexLayout kLayout;
 	};
 
+	F32 mMatrix[16];
 	Vertex mVertices[4];
 	//TexturePtr mTexture;
 	I32 mRectX;
@@ -53,6 +56,7 @@ private:
 	static Shader kShader;
 	static bgfx::IndexBufferHandle kIndexBuffer;
 	static bool InitializeSprites();
+	static bool ReleaseSprites();
 };
 
 } // namespace NAMESPACE_NAME

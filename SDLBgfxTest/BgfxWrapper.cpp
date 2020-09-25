@@ -175,6 +175,8 @@ bool BgfxWrapper::Release()
 
 	assert(bgfx.mInitialized);
 
+    Sprite::ReleaseSprites();
+
 	bgfx::shutdown();
     bgfx.mInitialized = false;
 

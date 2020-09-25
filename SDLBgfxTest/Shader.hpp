@@ -14,6 +14,7 @@ public:
 	~Shader();
 
 	bool Initialize(const char* vertexModule /*=nullptr*/, const char* fragmentModule /*=nullptr*/);
+	void Destroy();
 
 	bool IsValid() const;
 	bool HasVertexModule() const;
