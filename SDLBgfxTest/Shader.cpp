@@ -43,6 +43,11 @@ bool Shader::HasFragmentModule() const
 
 bgfx::ShaderHandle Shader::CreateModule(const char* filename)
 {
+	if (filename == nullptr || strlen(filename) == 0)
+	{
+		return BGFX_INVALID_HANDLE;
+	}
+
 	const char* shaderPath = "";
 	switch (bgfx::getRendererType()) 
 	{

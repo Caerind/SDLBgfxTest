@@ -5,6 +5,8 @@
 
 #include <bgfx/platform.h>
 
+#include "Sprite.hpp"
+
 namespace NAMESPACE_NAME
 {
 
@@ -154,6 +156,11 @@ bool BgfxWrapper::Init(Window& window)
 
     bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, kClearColor, 1.0f, 0);
     bgfx::setViewRect(kClearView, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));
+
+    if (!Sprite::InitializeSprites())
+    {
+        return false;
+    }
 
     bgfx.mInitialized = true;
     return true;

@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cstdlib>
 
+#include <functional>
+
 #if unix || __unix || __unix__ || __linux__ || linux || __linux || __FreeBSD__
 	#define ENGINE_PLATFORM_X11
 	#define ENGINE_PLATFORM_WAYLAND
@@ -29,15 +31,16 @@
 
 namespace NAMESPACE_NAME 
 {
+	using U16 = short int;
 	using U32 = unsigned int;
 	using I32 = int;
 	using F32 = float;
 
-#ifdef ENGINE_DEBUG
 	template <typename ... Args>
 	void Debug(const char* msg, Args&& ... args)
 	{
+#ifdef ENGINE_DEBUG
 		printf(msg, std::forward<Args>(args)...);
-	}
 #endif // ENGINE_DEBUG
+	}
 }
