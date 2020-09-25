@@ -18,4 +18,4 @@ add_executable(SDLBGFXTest
 	ImGuiWrapper.hpp 
 	ImGuiWrapper.cpp 
 	main.cpp)
-target_link_libraries(SDLBGFXTest PUBLIC SDL2 SDL2main bgfx)
+target_link_libraries(SDLBGFXTest PUBLIC SDL2 SDL2main bgfx dear-imgui)
