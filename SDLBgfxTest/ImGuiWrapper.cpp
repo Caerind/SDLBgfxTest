@@ -32,6 +32,16 @@ bool ImGuiWrapper::Release()
     return true;
 }
 
+void ImGuiWrapper::BeginFrame()
+{
+    assert(GetInstance().mInitialized);
+}
+
+void ImGuiWrapper::EndFrame()
+{
+    assert(GetInstance().mInitialized);
+}
+
 ImGuiWrapper& ImGuiWrapper::GetInstance()
 {
     static ImGuiWrapper instance;

@@ -18,10 +18,11 @@ public:
 	void SetTexture(const Texture& texture);
 	const Texture* GetTexture() const;
 
-	void SetTextureRect(I32 x, I32 y, I32 w, I32 h);
-	void GetTextureRect(I32& x, I32& y, I32& w, I32& h) const;
+	void SetTextureRect(const Recti& textureRect);
+	const Recti& GetTextureRect() const;
 
-	void GetBounds(F32& minX, F32& minY, F32& maxX, F32& maxY) const;
+	Rectf GetLocalBounds() const;
+	Rectf GetGlobalBounds() const;
 
 	void Render() const;
 
@@ -31,21 +32,16 @@ private:
 private:
 	struct Vertex
 	{
-		F32 x;
-		F32 y;
-		F32 u;
-		F32 v;
+		Vector2f pos;
+		Vector2f texCoords;
 
 		static bgfx::VertexLayout kLayout;
-	};
+	}; 
 
 	Vertex mVertices[4];
+	Recti mTextureRect;
+	bgfx::VertexBufferHandle mBuffer;
 	const Texture* mTexture;
-	I32 mRectX;
-	I32 mRectY;
-	I32 mRectW;
-	I32 mRectH;
-	bgfx::VertexBufferHandle mBuffer; // TODO : Move this outside to batch
 
 private:
 	friend class BgfxWrapper;

@@ -8,6 +8,7 @@ namespace NAMESPACE_NAME
 
 Texture::Texture()
 	: mTexture(BGFX_INVALID_HANDLE)
+	, mInfo()
 {
 }
 
@@ -16,7 +17,7 @@ Texture::~Texture()
 	Destroy();
 }
 
-bool Texture::Initialize(const char* filename, uint64_t flags)
+bool Texture::Initialize(const char* filename, U64 flags)
 {
 	if (bgfx::isValid(mTexture))
 	{
@@ -24,6 +25,7 @@ bool Texture::Initialize(const char* filename, uint64_t flags)
 	}
 
 	mTexture = BGFX_INVALID_HANDLE;
+	mInfo = bgfx::TextureInfo();
 
 	FILE* file = fopen(filename, "rb");
 	if (file == nullptr)
@@ -63,7 +65,7 @@ bool Texture::Initialize(const char* filename, uint64_t flags)
 			, mem
 		);
 	}
-	else if (1 < imageContainer->m_depth)
+	else if (imageContainer->m_depth > 1)
 	{
 		mTexture = bgfx::createTexture3D(
 			uint16_t(imageContainer->m_width)
@@ -91,9 +93,7 @@ bool Texture::Initialize(const char* filename, uint64_t flags)
 	if (bgfx::isValid(mTexture))
 	{
 		bgfx::setName(mTexture, filename);
-		/*
-		mFlags = flags;
-		mOrientation = imageContainer->m_orientation;
+
 		bgfx::calcTextureSize(
 			mInfo
 			, uint16_t(imageContainer->m_width)
@@ -103,21 +103,12 @@ bool Texture::Initialize(const char* filename, uint64_t flags)
 			, 1 < imageContainer->m_numMips
 			, imageContainer->m_numLayers
 			, bgfx::TextureFormat::Enum(imageContainer->m_format)
-			);
-		*/
-
-		// TODO : This is not clean but ok for now
-		mWidth = static_cast<I32>(imageContainer->m_width);
-		mHeight = static_cast<I32>(imageContainer->m_height);
+		);
 
 		return true;
 	}
 	else
 	{
-
-		mWidth = 0;
-		mHeight = 0;
-
 		return false;
 	}
 }
@@ -136,14 +127,53 @@ bool Texture::IsValid() const
 	return bgfx::isValid(mTexture);
 }
 
-I32 Texture::GetWidth() const
+U32 Texture::GetMemSize() const
 {
-	return mWidth;
+	return mInfo.storageSize;
 }
 
-I32 Texture::GetHeight() const
+Vector3u Texture::GetSize() const
 {
-	return mHeight;
+	return Vector3u(
+		static_cast<U32>(mInfo.width),
+		static_cast<U32>(mInfo.height),
+		static_cast<U32>(mInfo.depth)
+	);
+}
+
+U32 Texture::GetWidth() const
+{
+	return static_cast<U32>(mInfo.width);
+}
+
+U32 Texture::GetHeight() const
+{
+	return static_cast<U32>(mInfo.height);
+}
+
+U32 Texture::GetDepth() const
+{
+	return static_cast<U32>(mInfo.depth);
+}
+
+U32 Texture::GetLayers() const
+{
+	return static_cast<U32>(mInfo.numLayers);
+}
+
+U32 Texture::GetMips() const
+{
+	return static_cast<U32>(mInfo.numMips);
+}
+
+U32 Texture::GetBitsPerPixel() const
+{
+	return static_cast<U32>(mInfo.bitsPerPixel);
+}
+
+bool Texture::IsCubeMap() const
+{
+	return mInfo.cubeMap;
 }
 
 void Texture::ImageReleaseCallback(void* ptr, void* userData)

@@ -6,19 +6,16 @@ namespace NAMESPACE_NAME
 {
 
 bgfx::VertexLayout Sprite::Vertex::kLayout;
-const U16 Sprite::kIndices[6] = { 0, 1, 2, 0, 2, 3 };
+const U16 Sprite::kIndices[6] = { 0, 2, 1, 0, 3, 2 };
 Shader Sprite::kShader;
 bgfx::UniformHandle Sprite::kUniformTexture;
 bgfx::IndexBufferHandle Sprite::kIndexBuffer;
 
 Sprite::Sprite()
 	: mVertices()
-	, mTexture(nullptr)
-	, mRectX(0)
-	, mRectY(0)
-	, mRectW(0)
-	, mRectH(0)
+	, mTextureRect()
 	, mBuffer(BGFX_INVALID_HANDLE)
+	, mTexture(nullptr)
 {
 }
 
@@ -34,15 +31,8 @@ void Sprite::SetTexture(const Texture& texture)
 {
 	if (texture.IsValid())
 	{
-		if (mTexture == nullptr)
-		{
-			mTexture = &texture;
-			SetTextureRect(0, 0, texture.GetWidth(), texture.GetHeight());
-		}
-		else
-		{
-			mTexture = &texture;
-		}
+		mTexture = &texture;
+		SetTextureRect(Recti(0, 0, texture.GetWidth(), texture.GetHeight()));
 	}
 }
 
@@ -51,34 +41,34 @@ const Texture* Sprite::GetTexture() const
 	return mTexture;
 }
 
-void Sprite::SetTextureRect(I32 x, I32 y, I32 w, I32 h)
+void Sprite::SetTextureRect(const Recti& textureRect)
 {
-	mRectX = x;
-	mRectY = y;
-	mRectW = w;
-	mRectH = h;
-	Update();
+	if (mTextureRect != textureRect)
+	{
+		mTextureRect = textureRect;
+		Update();
+	}
 }
 
-void Sprite::GetTextureRect(I32& x, I32& y, I32& w, I32& h) const
+const Recti& Sprite::GetTextureRect() const
 {
-	x = mRectX;
-	y = mRectY;
-	w = mRectW;
-	h = mRectH;
+	return mTextureRect;
 }
 
-void Sprite::GetBounds(F32& minX, F32& minY, F32& maxX, F32& maxY) const
+Rectf Sprite::GetLocalBounds() const
 {
-	minX = 0.0f;
-	minY = 0.0f;
-	maxX = static_cast<F32>(std::abs(mRectW));
-	maxY = static_cast<F32>(std::abs(mRectH));
+	return Rectf(0.0f, 0.0f, 1.0f, -1.0f);
+}
+
+Rectf Sprite::GetGlobalBounds() const
+{
+	// TODO : Transform
+	return GetLocalBounds();
 }
 
 void Sprite::Render() const
 {
-	if (bgfx::isValid(mBuffer) && mTexture != nullptr && mTexture->IsValid())
+	if (bgfx::isValid(mBuffer) && mTexture != nullptr)
 	{
 		// Common to all sprites
 		bgfx::setIndexBuffer(kIndexBuffer);
@@ -93,44 +83,32 @@ void Sprite::Render() const
 
 void Sprite::Update()
 {
-	assert(mTexture != nullptr);
+	const Rectf localBounds = GetLocalBounds();
+	const F32 localBoundsRight = localBounds.left + localBounds.width;
+	const F32 localBoundsBottom = localBounds.top + localBounds.height;
 
+	// TODO : Find how to handle texture errors here
+	assert(mTexture != nullptr);
 	assert(mTexture->GetWidth() > 0);
 	const F32 oneOverTexWidth = 1.0f / static_cast<F32>(mTexture->GetWidth());
-
 	assert(mTexture->GetHeight() > 0);
 	const F32 oneOverTexHeight = 1.0f / static_cast<F32>(mTexture->GetHeight());
+	const F32 left = static_cast<F32>(mTextureRect.left) * oneOverTexWidth;
+	const F32 right = static_cast<F32>(mTextureRect.left + mTextureRect.width) * oneOverTexWidth;
+	const F32 top = static_cast<F32>(mTextureRect.top) * oneOverTexHeight;
+	const F32 bottom = static_cast<F32>(mTextureRect.top + mTextureRect.height) * oneOverTexHeight;
 
-	F32 minX, minY, maxX, maxY;
-	GetBounds(minX, minY, maxX, maxY);
-	maxX *= oneOverTexWidth;
-	maxY *= oneOverTexHeight;
+	mVertices[0].pos = Vector2f(localBounds.left, localBounds.top);
+	mVertices[0].texCoords = Vector2f(left, top);
+	mVertices[1].pos = Vector2f(localBoundsRight, localBounds.top);
+	mVertices[1].texCoords = Vector2f(right, top);
+	mVertices[2].pos = Vector2f(localBoundsRight, localBoundsBottom);
+	mVertices[2].texCoords = Vector2f(right, bottom);
+	mVertices[3].pos = Vector2f(localBounds.left, localBoundsBottom);
+	mVertices[3].texCoords = Vector2f(left, bottom);
 
-	const F32 left = static_cast<F32>(mRectX) * oneOverTexWidth;
-	const F32 right = (static_cast<F32>(mRectX) + mRectW) * oneOverTexWidth;
-	const F32 top = static_cast<F32>(mRectY) * oneOverTexHeight;
-	const F32 bottom = (static_cast<F32>(mRectY) + mRectH) * oneOverTexHeight;
-
-	mVertices[0].x = minX;
-	mVertices[0].y = minY;
-	mVertices[0].u = left;
-	mVertices[0].v = top;
-
-	mVertices[1].x = maxX;
-	mVertices[1].y = minY;
-	mVertices[1].u = right;
-	mVertices[1].v = top;
-
-	mVertices[2].x = maxX;
-	mVertices[2].y = maxY;
-	mVertices[2].u = right;
-	mVertices[2].v = bottom;
-
-	mVertices[3].x = minX;
-	mVertices[3].y = maxY;
-	mVertices[3].u = left;
-	mVertices[3].v = bottom;
-
+	// TODO : Use dynamic vertex buffer instead ?
+	// TODO : => Give the choise to the user using template boolean parameter
 	if (bgfx::isValid(mBuffer))
 	{
 		bgfx::destroy(mBuffer);

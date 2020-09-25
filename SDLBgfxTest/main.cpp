@@ -112,6 +112,10 @@ int main(int argc, char** argv)
                 {
                     break;
                 }
+                ImGuiWrapper::BeginFrame();
+
+                ImGuiWrapper::EndFrame();
+
 
                 bgfx::touch(BgfxWrapper::kClearView);
 

@@ -13,15 +13,22 @@ public:
 	Texture();
 	~Texture();
 
-	bool Initialize(const char* filename, uint64_t flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE);
+	bool Initialize(const char* filename, U64 flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE);
 	void Destroy();
 
 	bool IsValid() const;
 
-	I32 GetWidth() const;
-	I32 GetHeight() const;
+	U32 GetMemSize() const;
+	Vector3u GetSize() const;
+	U32 GetWidth() const;
+	U32 GetHeight() const;
+	U32 GetDepth() const;
+	U32 GetLayers() const;
+	U32 GetMips() const;
+	U32 GetBitsPerPixel() const;
+	bool IsCubeMap() const;
 
-	// TODO : Remove/Clean if possible
+	// TODO : Remove/Clean
 	bgfx::TextureHandle GetHandle() const { return mTexture; }
 
 private:
@@ -29,8 +36,7 @@ private:
 
 private:
 	bgfx::TextureHandle mTexture;
-	I32 mWidth;
-	I32 mHeight;
+	bgfx::TextureInfo mInfo;
 };
 
 } // namespace NAMESPACE_NAME

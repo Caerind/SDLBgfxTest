@@ -15,17 +15,21 @@ Shader::~Shader()
 	Destroy();
 }
 
-bool Shader::Initialize(const char* vertexModule /*=nullptr*/, const char* fragmentModule /*=nullptr*/)
+bool Shader::Initialize(const char* vertexModule, const char* fragmentModule /*=nullptr*/)
 {
 	mVertexModule = CreateModule(vertexModule);
-	if (fragmentModule != nullptr)
-	{
-		mFragmentModule = CreateModule(fragmentModule);
-	}
-
 	if (!bgfx::isValid(mVertexModule))
 	{
 		return false;
+	}
+
+	if (fragmentModule != nullptr)
+	{
+		mFragmentModule = CreateModule(fragmentModule);
+		if (!bgfx::isValid(mFragmentModule))
+		{
+			return false;
+		}
 	}
 
 	mShaderProgram = bgfx::createProgram(mVertexModule, mFragmentModule, true);

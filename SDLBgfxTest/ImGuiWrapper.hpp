@@ -14,6 +14,9 @@ public:
 	static bool IsInitialized();
 	static bool Release();
 
+	static void BeginFrame();
+	static void EndFrame();
+
 private:
 	static ImGuiWrapper& GetInstance();
 
