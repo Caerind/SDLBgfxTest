@@ -149,7 +149,7 @@ bool BgfxWrapper::Init(Window& window)
     bgfx::init(init);
 
 #ifdef ENGINE_DEBUG
-    bgfx::setDebug(BGFX_DEBUG_TEXT | BGFX_DEBUG_STATS);
+    bgfx::setDebug(BGFX_DEBUG_TEXT);
 #endif // ENGINE_DEBUG
 
     bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, kClearColor, 1.0f, 0);
@@ -183,6 +183,24 @@ bool BgfxWrapper::Release()
     return true;
 }
 
+#ifdef ENGINE_DEBUG
+void BgfxWrapper::ToggleDisplayStats()
+{
+    SetDisplayStats(!GetInstance().mDisplayStats);
+}
+
+void BgfxWrapper::SetDisplayStats(bool display)
+{
+	GetInstance().mDisplayStats = display;
+    bgfx::setDebug(BGFX_DEBUG_TEXT | (display ? BGFX_DEBUG_STATS : 0));
+}
+
+bool BgfxWrapper::IsDisplayingStats()
+{
+    return GetInstance().mDisplayStats;
+}
+#endif // ENGINE_DEBUG
+
 BgfxWrapper& BgfxWrapper::GetInstance()
 {
     static BgfxWrapper instance;
@@ -191,6 +209,7 @@ BgfxWrapper& BgfxWrapper::GetInstance()
 
 BgfxWrapper::BgfxWrapper()
     : mInitialized(false)
+    , mDisplayStats(false)
 {
 }
 

@@ -73,12 +73,47 @@ bgfx::ShaderHandle Shader::CreateModule(const char* filename)
 		return BGFX_INVALID_HANDLE;
 	}
 
-	FILE* file = fopen(filename, "rb");
+	const char* shaderPath = "";
+	switch (bgfx::getRendererType())
+	{
+	case bgfx::RendererType::Noop:
+		return BGFX_INVALID_HANDLE;
+	case bgfx::RendererType::Direct3D9:
+		shaderPath = "shaders/dx9/";
+		break;
+	case bgfx::RendererType::Direct3D11:
+	case bgfx::RendererType::Direct3D12:
+		shaderPath = "shaders/dx11/";
+		break;
+	case bgfx::RendererType::Gnm:
+		shaderPath = "shaders/pssl/";
+		break;
+	case bgfx::RendererType::Metal:
+		shaderPath = "shaders/metal/";
+		break;
+	case bgfx::RendererType::OpenGL:
+		shaderPath = "shaders/glsl/";
+		break;
+	case bgfx::RendererType::OpenGLES:
+		shaderPath = "shaders/essl/";
+		break;
+	case bgfx::RendererType::Vulkan:
+		shaderPath = "shaders/spirv/";
+		break;
+	}
+
+	std::size_t shaderLen = strlen(shaderPath);
+	std::size_t fileLen = strlen(filename);
+	char* filepath = (char*)malloc(shaderLen + fileLen + 1); // TODO : Leaking memory ?
+	memcpy(filepath, shaderPath, shaderLen);
+	memcpy(&filepath[shaderLen], filename, fileLen);
+	filepath[shaderLen + fileLen] = '\0';
+
+	FILE* file = fopen(filepath, "rb");
 	if (file == nullptr)
 	{
 		return BGFX_INVALID_HANDLE;
 	}
-
 	fseek(file, 0, SEEK_END);
 	std::size_t fileSize = static_cast<std::size_t>(ftell(file));
 	fseek(file, 0, SEEK_SET);

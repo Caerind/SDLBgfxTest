@@ -18,13 +18,22 @@ public:
     static bool IsInitialized();
     static bool Release();
 
-private:
+#ifdef ENGINE_DEBUG
+    static void ToggleDisplayStats();
+    static void SetDisplayStats(bool display);
+    static bool IsDisplayingStats();
+#endif // ENGINE_DEBUG
+
+private: 
     static BgfxWrapper& GetInstance();
 
     BgfxWrapper();
     ~BgfxWrapper();
 
-    bool mInitialized;
+	bool mInitialized;
+#ifdef ENGINE_DEBUG
+	bool mDisplayStats;
+#endif // ENGINE_DEBUG
 };
 
 } // namespace NAMESPACE_NAME

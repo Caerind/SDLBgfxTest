@@ -1,5 +1,7 @@
 #include "EngineIntegration.hpp"
 
+#include <vector>
+
 #include <bx/math.h>
 
 #include "SDLWrapper.hpp"
@@ -8,6 +10,7 @@
 #include "ImGuiWrapper.hpp"
 #include "Shader.hpp"
 #include "Sprite.hpp"
+#include "Texture.hpp"
 
 using namespace NAMESPACE_NAME;
 
@@ -44,17 +47,34 @@ int main(int argc, char** argv)
 #endif // ENGINE_IMGUI
 
         {
-            Sprite sprite;
-            sprite.SetTextureRect(0, 0, 1, 1); // Just to create the VB
+            Texture texture;
+            if (!texture.Initialize("fieldstone-rgba.dds"))
+            {
+#ifdef ENGINE_IMGUI
+                ImGuiWrapper::Release();
+#endif // ENGINE_IMGUI
+				BgfxWrapper::Release();
+				SDLWrapper::Release();
+				Debug("Can't load texture\n");
+                return -1;
+            }
 
-            const bx::Vec3 at = { 0.0f, 0.0f,   0.0f };
-            const bx::Vec3 eye = { 0.0f, 0.0f, 10.0f };
+            std::vector<Sprite> sprites;
+            sprites.resize(10000);
+            for (auto& sprite : sprites)
+			{
+				sprite.SetTexture(texture);
+            }
+
+            const bx::Vec3 up = { 0.0f, 1.0f, 0.0f };
+            const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
+            const bx::Vec3 eye = { 0.0f, 0.0f, 5.0f };
             F32 view[16];
-            bx::mtxLookAt(view, eye, at);
+            bx::mtxLookAt(view, eye, at, up, bx::Handness::Right);
             F32 proj[16];
-            bx::mtxProj(proj, 60.0f, F32(window.GetWidth()) / F32(window.GetHeight()), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+            bx::mtxProj(proj, 60.0f, F32(window.GetWidth()) / F32(window.GetHeight()), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth, bx::Handness::Right);
 
-            bgfx::setViewTransform(0, view, proj);
+            U32 counter = 0;
 
             while (window.IsOpen())
             {
@@ -67,6 +87,15 @@ int main(int argc, char** argv)
                     {
                         window.Close();
                         break;
+                    }
+                    case SDL_KEYDOWN:
+                    {
+                        if (event.key.keysym.sym == SDLK_F3)
+                        {
+#ifdef ENGINE_DEBUG
+                            BgfxWrapper::ToggleDisplayStats();
+#endif // ENGINE_DEBUG
+                        }
                     }
                     case SDL_WINDOWEVENT:
                     {
@@ -85,9 +114,13 @@ int main(int argc, char** argv)
                 }
 
                 bgfx::touch(BgfxWrapper::kClearView);
-                //bgfx::dbgTextClear();
 
-                sprite.Render();
+				bgfx::setViewTransform(BgfxWrapper::kClearView, view, proj);
+
+				for (auto& sprite : sprites)
+				{
+					sprite.Render();
+				}
 
                 bgfx::frame();
             }

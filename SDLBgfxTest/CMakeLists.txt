@@ -1,2 +1,21 @@
-add_executable(SDLBGFXTest EngineIntegration.hpp SDLWrapper.hpp SDLWrapper.cpp Window.hpp Window.cpp BgfxWrapper.hpp BgfxWrapper.cpp Shader.hpp Shader.cpp Sprite.hpp Sprite.cpp ImGuiWrapper.hpp ImGuiWrapper.cpp main.cpp)
+add_executable(SDLBGFXTest
+	shaders/sprite.vs
+	shaders/sprite.fs
+	shaders/varying.def.sc
+	EngineIntegration.hpp 
+	SDLWrapper.hpp 
+	SDLWrapper.cpp 
+	Window.hpp 
+	Window.cpp 
+	BgfxWrapper.hpp 
+	BgfxWrapper.cpp 
+	Shader.hpp 
+	Shader.cpp
+	Texture.hpp
+	Texture.cpp
+	Sprite.hpp 
+	Sprite.cpp 
+	ImGuiWrapper.hpp 
+	ImGuiWrapper.cpp 
+	main.cpp)
 target_link_libraries(SDLBGFXTest PUBLIC SDL2 SDL2main bgfx)
