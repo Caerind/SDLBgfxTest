@@ -42,8 +42,16 @@ public:
 
 private:
     friend class BgfxWrapper;
+    friend class Mouse;
 
     SDL_Window* mWindow;
+
+    static constexpr U32 kMaxWindows = 10;
+    static U32 sWindowCount;
+    static Window* sWindows[kMaxWindows];
+    static void RegisterWindow(Window* window);
+    static void UnregisterWindow(Window* window);
+    static Window* GetWindowFromSDL(SDL_Window* sdlWindow);
 };
 
 } // namespace NAMESPACE_NAME

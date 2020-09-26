@@ -11,6 +11,7 @@
 #include "Shader.hpp"
 #include "Sprite.hpp"
 #include "Texture.hpp"
+#include "Mouse.hpp"
 
 using namespace NAMESPACE_NAME;
 
@@ -80,6 +81,8 @@ int main(int argc, char** argv)
 
             while (window.IsOpen())
             {
+                Mouse::Refresh();
+
                 SDL_Event event;
                 while (SDLWrapper::PollEvent(event))
                 {

@@ -3,9 +3,13 @@
 namespace NAMESPACE_NAME
 {
 
+U32 Window::sWindowCount = 0;
+Window* Window::sWindows[kMaxWindows];
+
 Window::Window()
     : mWindow(nullptr)
 {
+    RegisterWindow(this);
 }
 
 Window::Window(const char* name, I32 width, I32 height)
@@ -17,6 +21,7 @@ Window::Window(const char* name, I32 width, I32 height)
 Window::~Window()
 {
     Close();
+    UnregisterWindow(this);
 }
 
 bool Window::Create(const char* name, I32 width, I32 height, U32 flags /*= SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE*/)
@@ -150,6 +155,61 @@ const char* Window::GetTitle() const
 U32 Window::GetFlags() const
 {
     return (mWindow != nullptr) ? SDL_GetWindowFlags(mWindow) : 0;
+}
+
+void Window::RegisterWindow(Window* window)
+{
+	if (sWindowCount < kMaxWindows)
+	{
+		sWindows[sWindowCount] = window;
+		sWindowCount++;
+	}
+	else
+	{
+		// Maximum amount of windows reached
+		// Increase Window::kMaxWindows or use less windows
+		assert(false);
+	}
+}
+
+void Window::UnregisterWindow(Window* window)
+{
+	for (U32 i = 0; i < sWindowCount; ++i)
+	{
+		if (sWindows[i] == window)
+		{
+			sWindowCount--;
+			for (U32 j = i; j < sWindowCount; ++j)
+			{
+				sWindows[j] = sWindows[j + 1];
+			}
+			return;
+		}
+	}
+	// Not found ?
+	assert(false);
+}
+
+Window* Window::GetWindowFromSDL(SDL_Window* sdlWindow)
+{
+    if (sdlWindow == nullptr)
+    {
+        return nullptr;
+    }
+    else
+    {
+        for (U32 i = 0; i < sWindowCount; ++i)
+        {
+            assert(sWindows[i] != nullptr);
+            if (sWindows[i]->mWindow == sdlWindow)
+            {
+                return sWindows[i];
+            }
+        }
+        // SDL_Window created outside the Window class from the engine
+        assert(false);
+        return nullptr;
+    }
 }
 
 } // namespace NAMESPACE_NAME
