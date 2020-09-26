@@ -23,7 +23,7 @@ public:
 	static bool IsInitialized();
 	static bool Release();
 
-	static void BeginFrame();
+	static void BeginFrame(bgfx::ViewId viewId);
 	static void EndFrame();
 
 private:
@@ -48,7 +48,7 @@ private:
 	ImFont* mFonts[ImGui::Font::Count];
 	I64 mLast;
 	I32 mLastScroll;
-	bgfx::ViewId mViewID;
+	bgfx::ViewId mViewId;
 
 	friend void ImGui::PushFont(ImGui::Font::Enum font);
 	friend class ImGuiWrapperAllocatorAccess;

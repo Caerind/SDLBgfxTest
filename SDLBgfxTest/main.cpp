@@ -76,6 +76,8 @@ int main(int argc, char** argv)
 
             U32 counter = 0;
 
+            const bgfx::ViewId imguiViewId = 250;
+
             while (window.IsOpen())
             {
                 SDL_Event event;
@@ -114,7 +116,7 @@ int main(int argc, char** argv)
                 }
 
 #ifdef ENGINE_IMGUI
-                ImGuiWrapper::BeginFrame();
+                ImGuiWrapper::BeginFrame(imguiViewId);
                 ImGui::Begin("ImGui");
                 ImGui::Text("Hello World!\nBgfx " ICON_FA_HEART " ImGui");
                 ImGui::End();

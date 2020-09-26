@@ -55,7 +55,7 @@ bool ImGuiWrapper::Init()
 
 	imgui.mLastScroll = 0;
 	imgui.mLast = bx::getHPCounter();
-	imgui.mViewID = 255;
+	imgui.mViewId = 255;
 
 	ImGui::SetAllocatorFunctions(MemAlloc, MemFree, nullptr);
 	imgui.mContext = ImGui::CreateContext();
@@ -198,10 +198,9 @@ bool ImGuiWrapper::Release()
     return true;
 }
 
-void ImGuiWrapper::BeginFrame()
+void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 {
 	// TODO : Forward inputs
-	const bgfx::ViewId viewID = 123;
 	const char inputChar = -1;
 	const float windowWidth = 800;
 	const float windowHeight = 600;
@@ -219,7 +218,7 @@ void ImGuiWrapper::BeginFrame()
 	ImGuiWrapper& imgui = GetInstance();
 	assert(imgui.mInitialized);
     
-	imgui.mViewID = viewID;
+	imgui.mViewId = viewId;
 
 	ImGuiIO& io = ImGui::GetIO();
 	if (inputChar >= 0)
@@ -268,15 +267,15 @@ void ImGuiWrapper::EndFrame()
 	const float width = io.DisplaySize.x;
 	const float height = io.DisplaySize.y;
 
-	bgfx::setViewName(imgui.mViewID, "ImGui");
-	bgfx::setViewMode(imgui.mViewID, bgfx::ViewMode::Sequential);
+	bgfx::setViewName(imgui.mViewId, "ImGui");
+	bgfx::setViewMode(imgui.mViewId, bgfx::ViewMode::Sequential);
 
 	const bgfx::Caps* caps = bgfx::getCaps();
 	{
 		float ortho[16];
 		bx::mtxOrtho(ortho, 0.0f, width, height, 0.0f, 0.0f, 1000.0f, 0.0f, caps->homogeneousDepth);
-		bgfx::setViewTransform(imgui.mViewID, NULL, ortho);
-		bgfx::setViewRect(imgui.mViewID, 0, 0, uint16_t(width), uint16_t(height));
+		bgfx::setViewTransform(imgui.mViewId, nullptr, ortho);
+		bgfx::setViewRect(imgui.mViewId, 0, 0, uint16_t(width), uint16_t(height));
 	}
 
 	// Render command lists
@@ -357,7 +356,7 @@ void ImGuiWrapper::EndFrame()
 				bgfx::setTexture(0, imgui.mSamplerTexture , th);
 				bgfx::setVertexBuffer(0, &tvb, 0, numVertices);
 				bgfx::setIndexBuffer(&tib, offset, cmd->ElemCount);
-				bgfx::submit(imgui.mViewID, program);
+				bgfx::submit(imgui.mViewId, program);
 			}
 
 			offset += cmd->ElemCount;
@@ -372,8 +371,19 @@ ImGuiWrapper& ImGuiWrapper::GetInstance()
 }
 
 ImGuiWrapper::ImGuiWrapper()
-    : mInitialized(false)
-	// TODO : Initialize members
+	: mInitialized(false)
+	, mContext(nullptr)
+	, mAllocator(nullptr)
+	, mVertexLayout()
+	, mProgram(BGFX_INVALID_HANDLE)
+	, mImageProgram(BGFX_INVALID_HANDLE)
+	, mTexture(BGFX_INVALID_HANDLE)
+	, mSamplerTexture(BGFX_INVALID_HANDLE)
+	, mImageLodEnabled(BGFX_INVALID_HANDLE)
+	, mFonts()
+	, mLast(0)
+	, mLastScroll(0)
+	, mViewId(255)
 {
 }
 
