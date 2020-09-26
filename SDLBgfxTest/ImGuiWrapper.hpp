@@ -21,7 +21,7 @@ public:
 	static void BeginFrame();
 	static void EndFrame();
 
-private:
+	// Used by STB & ImGui : You should not use it
 	static void* MemAlloc(std::size_t size, void* userData);
 	static void MemFree(void* ptr, void* userData);
 
@@ -34,9 +34,18 @@ private:
 	bool mInitialized;
 	ImGuiContext* mContext;
 	bx::AllocatorI* mAllocator;
+	bgfx::VertexLayout mVertexLayout;
+	bgfx::ProgramHandle mProgram;
+	bgfx::ProgramHandle mImageProgram;
+	bgfx::TextureHandle mTexture;
+	bgfx::UniformHandle mSamplerTexture;
+	bgfx::UniformHandle mImageLodEnabled;
+	ImFont* mFonts[ImGui::Font::Count];
 	I64 mLast;
 	I32 mLastScroll;
 	bgfx::ViewId mViewID;
+
+	friend void ImGui::PushFont(ImGui::Font::Enum font);
 };
 
 } // namespace NAMESPACE_NAME
