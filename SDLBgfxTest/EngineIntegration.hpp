@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
+#include <utility>
 
 #if unix || __unix || __unix__ || __linux__ || linux || __linux || __FreeBSD__
 	#define ENGINE_PLATFORM_X11
