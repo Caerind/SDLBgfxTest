@@ -42,6 +42,8 @@ do
     fsbin="build/${fsfile}.bin"
     vsbin="build/${vsfile}.bin"
 
+    #TODO: platform asm.js ?
+
     # DX9
     ${path_shaderc} -f "${vsfile}" -o "${vsbin}" --platform windows -p vs_3_0 -O 3 --type vertex --verbose -i $includepath
     ${path_shaderc} -f "${fsfile}" -o "${fsbin}" --platform windows -p ps_3_0 -O 3 --type fragment --verbose -i $includepath
