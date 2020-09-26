@@ -247,3 +247,4 @@ ModelManifest.xml
 .fake/
 
 ./build
+/bgfx/bgfx/examples/runtime/shaders

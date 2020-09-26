@@ -1,8 +1,7 @@
 #include "EngineIntegration.hpp"
 
-#include <vector>
-
 #include <bx/math.h>
+#include <bx/timer.h>
 
 #include "SDLWrapper.hpp"
 #include "Window.hpp"
@@ -13,6 +12,7 @@
 #include "Texture.hpp"
 #include "Mouse.hpp"
 #include "Keyboard.hpp"
+#include "Camera.hpp"
 
 using namespace NAMESPACE_NAME;
 
@@ -53,36 +53,47 @@ int main(int argc, char** argv)
 #endif // ENGINE_IMGUI
 
         {
-            Texture texture;
-            if (!texture.Initialize("fieldstone-rgba.dds"))
+			Texture textureA;
+			const char* textureAFilename = "fieldstone-rgba.dds";
+            if (!textureA.Initialize(textureAFilename))
 			{
-				window.Close();
-#ifdef ENGINE_IMGUI
-                ImGuiWrapper::Release();
-#endif // ENGINE_IMGUI
-				BgfxWrapper::Release();
-				window.Destroy();
-				SDLWrapper::Release();
-				Debug("Can't load texture\n");
-                return -1;
+				Debug("Can't load texture A : %s\n", textureAFilename);
+			}
+
+			Texture textureB;
+            const char* textureBFilename = "ship_default.png";
+            if (!textureB.Initialize(textureBFilename))
+            {
+                Debug("Can't load texture B : %s\n", textureBFilename);
             }
 
-            std::vector<Sprite> sprites;
-            sprites.resize(1000);
-            for (auto& sprite : sprites)
-			{
-				sprite.SetTexture(texture);
+            Sprite spriteA;
+            spriteA.SetTexture(textureA);
+
+            Sprite spriteB;
+			spriteB.SetTexture(textureB);
+            F32 spriteBTransform[16];
+            bx::mtxTranslate(spriteBTransform, 2.0f, 2.0f, 0.0f);
+
+			Camera camera;
+            {
+                // Projection
+                camera.SetFOV(60.0f);
+                camera.SetNearPlane(0.1f);
+                camera.SetFarPlane(100.0f);
+                camera.SetRatio(F32(window.GetWidth()) / F32(window.GetHeight()));
+
+                // View
+                camera.SetPosition(Vector3f(0.0f, 0.0f, 5.0f));
+                camera.SetLookAt(Vector3f(0.0f, 0.0f, 0.0f));
+                camera.SetUpVector(Vector3f(0.0f, 1.0f, 0.0f));
             }
 
-            const bx::Vec3 up = { 0.0f, 1.0f, 0.0f };
-            const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
-            const bx::Vec3 eye = { 0.0f, 0.0f, 5.0f };
-            F32 view[16];
-            bx::mtxLookAt(view, eye, at, up, bx::Handness::Right);
-            F32 proj[16];
-            bx::mtxProj(proj, 60.0f, F32(window.GetWidth()) / F32(window.GetHeight()), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth, bx::Handness::Right);
+            const F32 cameraSpeedZ = 2.0f;
+            const F32 cameraSpeedX = 3.0f;
 
-            U32 counter = 0;
+			I64 last = bx::getHPCounter();
+			const double freq = double(bx::getHPFrequency());
 
 			const bgfx::ViewId imguiViewId = 250;
 			bool imguiDemoVisible = true;
@@ -130,8 +141,8 @@ int main(int argc, char** argv)
                     }
 				}
                 if (window.ShouldClose())
-				{
-					bgfx::frame();
+                {
+                    bgfx::frame();
                     break;
                 }
 
@@ -141,13 +152,46 @@ int main(int argc, char** argv)
                 ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
 
+				const I64 now = bx::getHPCounter();
+				const I64 frameTime = now - last;
+				last = now;
+				const F32 dt = F32(frameTime / freq);
+
+                bool moved = false;
+				Vector3f pos = camera.GetPosition();
+                const F32 mvtZ = dt * cameraSpeedZ;
+                if (Keyboard::IsHold(Keyboard::Key::Up))
+                {
+					pos.z -= mvtZ;
+                    moved = true;
+                }
+                if (Keyboard::IsHold(Keyboard::Key::Down))
+				{
+					pos.z += mvtZ;
+					moved = true;
+				}
+				const F32 mvtX = dt * cameraSpeedX;
+				if (Keyboard::IsHold(Keyboard::Key::Right))
+				{
+                    pos.x += mvtX;
+					moved = true;
+				}
+                if (Keyboard::IsHold(Keyboard::Key::Left))
+                {
+					pos.x -= mvtX;
+					moved = true;
+                }
+                if (moved)
+                {
+					camera.SetPosition(pos);
+                }
+
                 if (Keyboard::IsControlHold() && Keyboard::IsPressed(Keyboard::Key::F3))
 				{
 #ifdef ENGINE_DEBUG
 					BgfxWrapper::ToggleDisplayStats();
 #endif // ENGINE_DEBUG
                 }
-
 
                 bgfx::touch(BgfxWrapper::kClearView);
 
@@ -157,12 +201,12 @@ int main(int argc, char** argv)
                 const I32 dbgMouseWheel = Mouse::GetWheel();
                 bgfx::dbgTextPrintf(0, 0, 0x0f, "Mouse: (%d, %d) (%d, %d) (%d)", dbgMousePos.x, dbgMousePos.y, dbgMouseDeltaPos.x, dbgMouseDeltaPos.y, dbgMouseWheel);
 
-				bgfx::setViewTransform(BgfxWrapper::kClearView, view, proj);
+                camera.Apply(BgfxWrapper::kClearView);
 
-				for (auto& sprite : sprites)
-				{
-					sprite.Render();
-				}
+                spriteA.Render();
+
+                bgfx::setTransform(spriteBTransform);
+                spriteB.Render();
 
                 bgfx::frame();
             }
