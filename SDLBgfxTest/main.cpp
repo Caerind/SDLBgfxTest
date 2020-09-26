@@ -77,7 +77,8 @@ int main(int argc, char** argv)
 
             U32 counter = 0;
 
-            const bgfx::ViewId imguiViewId = 250;
+			const bgfx::ViewId imguiViewId = 250;
+			bool imguiDemoVisible = true;
 
             while (window.IsOpen())
             {
@@ -88,6 +89,12 @@ int main(int argc, char** argv)
                 {
                     switch (event.type)
                     {
+                    case SDL_MOUSEWHEEL:
+                    case SDL_MOUSEBUTTONDOWN:
+                    {
+                        Mouse::HandleEvent(event);
+                        break;
+                    }
                     case SDL_QUIT:
                     {
                         window.Close();
@@ -120,9 +127,7 @@ int main(int argc, char** argv)
 
 #ifdef ENGINE_IMGUI
                 ImGuiWrapper::BeginFrame(imguiViewId);
-                ImGui::Begin("ImGui");
-                ImGui::Text("Hello World!\nBgfx " ICON_FA_HEART " ImGui");
-                ImGui::End();
+                ImGui::ShowDemoWindow(&imguiDemoVisible);
                 ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
 

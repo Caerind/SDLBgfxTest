@@ -47,7 +47,6 @@ private:
 	bgfx::UniformHandle mImageLodEnabled;
 	ImFont* mFonts[ImGui::Font::Count];
 	I64 mLast;
-	I32 mLastScroll;
 	bgfx::ViewId mViewId;
 
 	friend void ImGui::PushFont(ImGui::Font::Enum font);

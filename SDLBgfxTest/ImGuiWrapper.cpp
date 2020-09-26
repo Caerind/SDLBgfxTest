@@ -55,7 +55,6 @@ bool ImGuiWrapper::Init()
 	static bx::DefaultAllocator defaultAllocator;
 	imgui.mAllocator = &defaultAllocator;
 
-	imgui.mLastScroll = 0;
 	imgui.mLast = bx::getHPCounter();
 	imgui.mViewId = 255;
 
@@ -203,7 +202,6 @@ bool ImGuiWrapper::Release()
 void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 {
 	// TODO : Forward inputs
-	const int mouseScroll = 10; // No idea what this value should look like yet
 	const char inputChar = -1;
 	const float windowWidth = 800;
 	const float windowHeight = 600;
@@ -229,7 +227,7 @@ void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 	imgui.mLast = now;
 	const double freq = double(bx::getHPFrequency());
 	io.DeltaTime = float(frameTime / freq);
-
+	
 	const Vector2i mousePos = Mouse::GetPositionCurrentWindow();
 	io.MousePos = ImVec2(static_cast<F32>(mousePos.x), static_cast<F32>(mousePos.y));
 	io.MouseDown[0] = Mouse::IsPressed(Mouse::Button::Left);
@@ -237,8 +235,7 @@ void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 	io.MouseDown[2] = Mouse::IsPressed(Mouse::Button::Middle);
 	io.MouseDown[3] = Mouse::IsPressed(Mouse::Button::X1);
 	io.MouseDown[4] = Mouse::IsPressed(Mouse::Button::X2);
-	io.MouseWheel = (float)(mouseScroll - imgui.mLastScroll);
-	imgui.mLastScroll = mouseScroll;
+	io.MouseWheel = static_cast<float>(Mouse::GetWheel());
 
 	io.KeyShift = keyShift;
 	io.KeyCtrl = keyControl;
@@ -382,7 +379,6 @@ ImGuiWrapper::ImGuiWrapper()
 	, mImageLodEnabled(BGFX_INVALID_HANDLE)
 	, mFonts()
 	, mLast(0)
-	, mLastScroll(0)
 	, mViewId(255)
 {
 }

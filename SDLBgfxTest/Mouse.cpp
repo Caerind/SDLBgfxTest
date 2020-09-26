@@ -15,6 +15,24 @@ void Mouse::Refresh()
 	mouse.mDelta.y = y - mouse.mPosition.y;
 	mouse.mPosition.x = x;
 	mouse.mPosition.y = y;
+	mouse.mWheel = 0;
+	mouse.mHorizontalWheel = 0;
+}
+
+void Mouse::HandleEvent(const SDL_Event& event)
+{
+	Mouse& mouse = GetInstance();
+	if (event.type == SDL_MOUSEBUTTONDOWN)
+	{
+		mouse.mButtonMask |= event.button.button;
+	}
+	else if (event.type == SDL_MOUSEWHEEL)
+	{
+		if (event.wheel.x > 0) mouse.mHorizontalWheel += 1;
+		if (event.wheel.x < 0) mouse.mHorizontalWheel -= 1;
+		if (event.wheel.y > 0) mouse.mWheel += 1;
+		if (event.wheel.y < 0) mouse.mWheel -= 1;
+	}
 }
 
 bool Mouse::SetRelativeMode(bool enabled)
@@ -53,6 +71,16 @@ Vector2i Mouse::GetPositionCurrentWindow()
 Vector2i Mouse::GetDeltaPosition()
 {
 	return GetInstance().mDelta;
+}
+
+I32 Mouse::GetWheel()
+{
+	return GetInstance().mWheel;
+}
+
+I32 Mouse::GetHorizontalWheel()
+{
+	return GetInstance().mHorizontalWheel;
 }
 
 Window* Mouse::GetCurrentWindow()
@@ -94,6 +122,8 @@ Mouse::Mouse()
 	: mPosition(0, 0)
 	, mDelta(0, 0)
 	, mButtonMask(0)
+	, mWheel(0)
+	, mHorizontalWheel(0)
 {
 }
 
