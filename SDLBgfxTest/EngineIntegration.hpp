@@ -34,6 +34,7 @@ namespace NAMESPACE_NAME
 	using U32 = unsigned int;
 	using U64 = unsigned long long;
 	using I32 = int;
+	using I64 = long long;
 	using F32 = float;
 
 	template <typename T>
