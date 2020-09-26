@@ -2,18 +2,33 @@
 
 #ifdef ENGINE_IMGUI
 
+#include <bx/math.h>
 #include <bx/timer.h>
 
-#include <iconfontheaders/icons_kenney.h>
-#include <iconfontheaders/icons_font_awesome.h>
+#include <bgfx/embedded_shader.h>
 
 #include "fonts/roboto_regular.ttf.h"
 #include "fonts/robotomono_regular.ttf.h"
 #include "fonts/icons_kenney.ttf.h"
 #include "fonts/icons_font_awesome.ttf.h"
 
+#include "embedded_shaders/vs_ocornut_imgui.bin.h"
+#include "embedded_shaders/fs_ocornut_imgui.bin.h"
+#include "embedded_shaders/vs_imgui_image.bin.h"
+#include "embedded_shaders/fs_imgui_image.bin.h"
+
 namespace NAMESPACE_NAME
 {
+
+static const bgfx::EmbeddedShader s_embeddedShaders[] =
+{
+	BGFX_EMBEDDED_SHADER(vs_ocornut_imgui),
+	BGFX_EMBEDDED_SHADER(fs_ocornut_imgui),
+	BGFX_EMBEDDED_SHADER(vs_imgui_image),
+	BGFX_EMBEDDED_SHADER(fs_imgui_image),
+
+	BGFX_EMBEDDED_SHADER_END()
+};
 
 struct FontRangeMerge
 {
@@ -30,10 +45,6 @@ static FontRangeMerge s_fontRangeMerge[] =
 
 bool ImGuiWrapper::Init()
 {
-	// inputs
-	const float fontSize = 18.0f;
-
-
     ImGuiWrapper& imgui = GetInstance();
 
     assert(!imgui.mInitialized);
@@ -56,6 +67,7 @@ bool ImGuiWrapper::Init()
 	io.IniFilename = nullptr;
 
 	// Style
+	const float fontSize = 18.0f;
 	ImGuiStyle& style = ImGui::GetStyle();
 	ImGui::StyleColorsDark(&style);
 	style.FrameRounding = 4.0f;
@@ -108,7 +120,6 @@ bool ImGuiWrapper::Init()
 	//io.NavInputs[ImGuiNavInput_TweakFast]   = (int)entry::Key::;
 	*/
 
-	/*
 	bgfx::RendererType::Enum type = bgfx::getRendererType();
 	imgui.mProgram = bgfx::createProgram(
 		bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_ocornut_imgui")
@@ -120,7 +131,6 @@ bool ImGuiWrapper::Init()
 		, bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_imgui_image")
 		, true
 	);
-	*/
 
 	imgui.mVertexLayout
 		.begin()
@@ -179,8 +189,8 @@ bool ImGuiWrapper::Release()
 	bgfx::destroy(imgui.mTexture);
 	bgfx::destroy(imgui.mSamplerTexture);
 	bgfx::destroy(imgui.mImageLodEnabled);
-	//bgfx::destroy(imgui.mProgram);
-	//bgfx::destroy(imgui.mImageProgram);
+	bgfx::destroy(imgui.mProgram);
+	bgfx::destroy(imgui.mImageProgram);
 
 	imgui.mAllocator = nullptr;
 
@@ -190,7 +200,7 @@ bool ImGuiWrapper::Release()
 
 void ImGuiWrapper::BeginFrame()
 {
-	// inputs
+	// TODO : Forward inputs
 	const bgfx::ViewId viewID = 123;
 	const char inputChar = -1;
 	const float windowWidth = 800;
@@ -204,6 +214,7 @@ void ImGuiWrapper::BeginFrame()
 	const bool keyShift = false;
 	const bool keyControl = false;
 	const bool keyAlt = false;
+	// + keys states
 
 	ImGuiWrapper& imgui = GetInstance();
 	assert(imgui.mInitialized);
@@ -251,108 +262,107 @@ void ImGuiWrapper::EndFrame()
 	ImGuiWrapper& imgui = GetInstance();
 	assert(imgui.mInitialized);
 
-    // endFrame
 	ImGui::Render();
 
-	// TODO : Render
-
-	/*
 	const ImGuiIO& io = ImGui::GetIO();
-		const float width  = io.DisplaySize.x;
-		const float height = io.DisplaySize.y;
+	const float width = io.DisplaySize.x;
+	const float height = io.DisplaySize.y;
 
-		bgfx::setViewName(m_viewId, "ImGui");
-		bgfx::setViewMode(m_viewId, bgfx::ViewMode::Sequential);
+	bgfx::setViewName(imgui.mViewID, "ImGui");
+	bgfx::setViewMode(imgui.mViewID, bgfx::ViewMode::Sequential);
 
-		const bgfx::Caps* caps = bgfx::getCaps();
+	const bgfx::Caps* caps = bgfx::getCaps();
+	{
+		float ortho[16];
+		bx::mtxOrtho(ortho, 0.0f, width, height, 0.0f, 0.0f, 1000.0f, 0.0f, caps->homogeneousDepth);
+		bgfx::setViewTransform(imgui.mViewID, NULL, ortho);
+		bgfx::setViewRect(imgui.mViewID, 0, 0, uint16_t(width), uint16_t(height));
+	}
+
+	// Render command lists
+	ImDrawData* drawData = ImGui::GetDrawData();
+	for (int32_t ii = 0, num = drawData->CmdListsCount; ii < num; ++ii)
+	{
+		bgfx::TransientVertexBuffer tvb;
+		bgfx::TransientIndexBuffer tib;
+
+		const ImDrawList* drawList = drawData->CmdLists[ii];
+		uint32_t numVertices = (uint32_t)drawList->VtxBuffer.size();
+		uint32_t numIndices  = (uint32_t)drawList->IdxBuffer.size();
+
+		// TODO : CheckAvailableTransientBuffers
+		/*
+		if (!checkAvailTransientBuffers(numVertices, m_layout, numIndices))
 		{
-			float ortho[16];
-			bx::mtxOrtho(ortho, 0.0f, width, height, 0.0f, 0.0f, 1000.0f, 0.0f, caps->homogeneousDepth);
-			bgfx::setViewTransform(m_viewId, NULL, ortho);
-			bgfx::setViewRect(m_viewId, 0, 0, uint16_t(width), uint16_t(height) );
+			// Not enough space in transient buffer just quit drawing the rest...
+			break;
 		}
+		*/
 
-		// Render command lists
-		for (int32_t ii = 0, num = _drawData->CmdListsCount; ii < num; ++ii)
+		bgfx::allocTransientVertexBuffer(&tvb, numVertices, imgui.mVertexLayout);
+		bgfx::allocTransientIndexBuffer(&tib, numIndices);
+
+		ImDrawVert* verts = (ImDrawVert*)tvb.data;
+		bx::memCopy(verts, drawList->VtxBuffer.begin(), numVertices * sizeof(ImDrawVert));
+
+		ImDrawIdx* indices = (ImDrawIdx*)tib.data;
+		bx::memCopy(indices, drawList->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
+
+		uint32_t offset = 0;
+		for (const ImDrawCmd* cmd = drawList->CmdBuffer.begin(), *cmdEnd = drawList->CmdBuffer.end(); cmd != cmdEnd; ++cmd)
 		{
-			bgfx::TransientVertexBuffer tvb;
-			bgfx::TransientIndexBuffer tib;
-
-			const ImDrawList* drawList = _drawData->CmdLists[ii];
-			uint32_t numVertices = (uint32_t)drawList->VtxBuffer.size();
-			uint32_t numIndices  = (uint32_t)drawList->IdxBuffer.size();
-
-			if (!checkAvailTransientBuffers(numVertices, m_layout, numIndices) )
+			if (cmd->UserCallback)
 			{
-				// not enough space in transient buffer just quit drawing the rest...
-				break;
+				cmd->UserCallback(drawList, cmd);
 			}
-
-			bgfx::allocTransientVertexBuffer(&tvb, numVertices, m_layout);
-			bgfx::allocTransientIndexBuffer(&tib, numIndices);
-
-			ImDrawVert* verts = (ImDrawVert*)tvb.data;
-			bx::memCopy(verts, drawList->VtxBuffer.begin(), numVertices * sizeof(ImDrawVert) );
-
-			ImDrawIdx* indices = (ImDrawIdx*)tib.data;
-			bx::memCopy(indices, drawList->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx) );
-
-			uint32_t offset = 0;
-			for (const ImDrawCmd* cmd = drawList->CmdBuffer.begin(), *cmdEnd = drawList->CmdBuffer.end(); cmd != cmdEnd; ++cmd)
+			else if (0 != cmd->ElemCount)
 			{
-				if (cmd->UserCallback)
+				uint64_t state = 0
+					| BGFX_STATE_WRITE_RGB
+					| BGFX_STATE_WRITE_A
+					| BGFX_STATE_MSAA
+					;
+
+				bgfx::TextureHandle th = imgui.mTexture;
+				bgfx::ProgramHandle program = imgui.mProgram;
+
+				if (NULL != cmd->TextureId)
 				{
-					cmd->UserCallback(drawList, cmd);
-				}
-				else if (0 != cmd->ElemCount)
-				{
-					uint64_t state = 0
-						| BGFX_STATE_WRITE_RGB
-						| BGFX_STATE_WRITE_A
-						| BGFX_STATE_MSAA
+					union { ImTextureID ptr; struct { bgfx::TextureHandle handle; uint8_t flags; uint8_t mip; } s; } texture = { cmd->TextureId };
+					state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & texture.s.flags)
+						? BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
+						: BGFX_STATE_NONE
 						;
-
-					bgfx::TextureHandle th = m_texture;
-					bgfx::ProgramHandle program = m_program;
-
-					if (NULL != cmd->TextureId)
+					th = texture.s.handle;
+					if (0 != texture.s.mip)
 					{
-						union { ImTextureID ptr; struct { bgfx::TextureHandle handle; uint8_t flags; uint8_t mip; } s; } texture = { cmd->TextureId };
-						state |= 0 != (IMGUI_FLAGS_ALPHA_BLEND & texture.s.flags)
-							? BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA)
-							: BGFX_STATE_NONE
-							;
-						th = texture.s.handle;
-						if (0 != texture.s.mip)
-						{
-							const float lodEnabled[4] = { float(texture.s.mip), 1.0f, 0.0f, 0.0f };
-							bgfx::setUniform(u_imageLodEnabled, lodEnabled);
-							program = m_imageProgram;
-						}
+						const float lodEnabled[4] = { float(texture.s.mip), 1.0f, 0.0f, 0.0f };
+						bgfx::setUniform(imgui.mImageLodEnabled, lodEnabled);
+						program = imgui.mImageProgram;
 					}
-					else
-					{
-						state |= BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
-					}
-
-					const uint16_t xx = uint16_t(bx::max(cmd->ClipRect.x, 0.0f) );
-					const uint16_t yy = uint16_t(bx::max(cmd->ClipRect.y, 0.0f) );
-					bgfx::setScissor(xx, yy
-						, uint16_t(bx::min(cmd->ClipRect.z, 65535.0f)-xx)
-						, uint16_t(bx::min(cmd->ClipRect.w, 65535.0f)-yy)
-						);
-
-					bgfx::setState(state);
-					bgfx::setTexture(0, s_tex, th);
-					bgfx::setVertexBuffer(0, &tvb, 0, numVertices);
-					bgfx::setIndexBuffer(&tib, offset, cmd->ElemCount);
-					bgfx::submit(m_viewId, program);
+				}
+				else
+				{
+					state |= BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
 				}
 
-				offset += cmd->ElemCount;
+				const uint16_t xx = uint16_t(bx::max(cmd->ClipRect.x, 0.0f) );
+				const uint16_t yy = uint16_t(bx::max(cmd->ClipRect.y, 0.0f) );
+				bgfx::setScissor(xx, yy
+					, uint16_t(bx::min(cmd->ClipRect.z, 65535.0f)-xx)
+					, uint16_t(bx::min(cmd->ClipRect.w, 65535.0f)-yy)
+					);
+
+				bgfx::setState(state);
+				bgfx::setTexture(0, imgui.mSamplerTexture , th);
+				bgfx::setVertexBuffer(0, &tvb, 0, numVertices);
+				bgfx::setIndexBuffer(&tib, offset, cmd->ElemCount);
+				bgfx::submit(imgui.mViewID, program);
 			}
+
+			offset += cmd->ElemCount;
 		}
-	*/
+	}
 }
 
 ImGuiWrapper& ImGuiWrapper::GetInstance()
@@ -363,6 +373,7 @@ ImGuiWrapper& ImGuiWrapper::GetInstance()
 
 ImGuiWrapper::ImGuiWrapper()
     : mInitialized(false)
+	// TODO : Initialize members
 {
 }
 
@@ -383,6 +394,20 @@ void ImGuiWrapper::MemFree(void* ptr, void* userData)
 	BX_FREE(GetInstance().mAllocator, ptr);
 }
 
+class ImGuiWrapperAllocatorAccess
+{
+public:
+	static void* MemAlloc(std::size_t size, void* userData)
+	{
+		return ImGuiWrapper::GetInstance().MemAlloc(size, userData);
+	}
+
+	static void MemFree(void* ptr, void* userData)
+	{
+		ImGuiWrapper::GetInstance().MemFree(ptr, userData);
+	}
+};
+
 } // namespace NAMESPACE_NAME
 
 namespace ImGui
@@ -400,8 +425,8 @@ BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wunused-function"); // warning: 'int re
 BX_PRAGMA_DIAGNOSTIC_PUSH();
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG("-Wunknown-pragmas")
 BX_PRAGMA_DIAGNOSTIC_IGNORED_CLANG_GCC("-Wtype-limits"); // warning: comparison is always true due to limited range of data type
-#define STBTT_malloc(size, userData) NAMESPACE_NAME::ImGuiWrapper::MemAlloc(size, userData)
-#define STBTT_free(ptr, userData) NAMESPACE_NAME::ImGuiWrapper::MemFree(ptr, userData)
+#define STBTT_malloc(size, userData) NAMESPACE_NAME::ImGuiWrapperAllocatorAccess::MemAlloc(size, userData)
+#define STBTT_free(ptr, userData) NAMESPACE_NAME::ImGuiWrapperAllocatorAccess::MemFree(ptr, userData)
 #define STB_RECT_PACK_IMPLEMENTATION
 #include <stb/stb_rect_pack.h>
 #define STB_TRUETYPE_IMPLEMENTATION

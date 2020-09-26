@@ -112,9 +112,14 @@ int main(int argc, char** argv)
                 {
                     break;
                 }
-                ImGuiWrapper::BeginFrame();
 
+#ifdef ENGINE_IMGUI
+                ImGuiWrapper::BeginFrame();
+                ImGui::Begin("ImGui");
+                ImGui::Text("Hello World!\nBgfx " ICON_FA_HEART " ImGui");
+                ImGui::End();
                 ImGuiWrapper::EndFrame();
+#endif // ENGINE_DEBUG
 
 
                 bgfx::touch(BgfxWrapper::kClearView);
