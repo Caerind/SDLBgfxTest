@@ -8,14 +8,9 @@ Window* Window::sWindows[kMaxWindows];
 
 Window::Window()
     : mWindow(nullptr)
+    , mShouldClose(false)
 {
     RegisterWindow(this);
-}
-
-Window::Window(const char* name, I32 width, I32 height)
-    : Window()
-{
-    Create(name, width, height);
 }
 
 Window::~Window()
@@ -27,21 +22,37 @@ Window::~Window()
 bool Window::Create(const char* name, I32 width, I32 height, U32 flags /*= SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE*/)
 {
     mWindow = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+    ResetShouldClose();
     return mWindow != nullptr;
+}
+
+void Window::Destroy()
+{
+	if (mWindow != nullptr)
+	{
+		SDL_DestroyWindow(mWindow);
+		mWindow = nullptr;
+	}
+}
+
+bool Window::IsValid() const
+{
+	return mWindow != nullptr;
 }
 
 void Window::Close()
 {
-    if (mWindow != nullptr)
-    {
-        SDL_DestroyWindow(mWindow);
-        mWindow = nullptr;
-    }
+    mShouldClose = true;
 }
 
-bool Window::IsOpen() const
+void Window::ResetShouldClose()
 {
-    return mWindow != nullptr;
+	mShouldClose = false;
+}
+
+bool Window::ShouldClose() const
+{
+    return mShouldClose;
 }
 
 void Window::SetVisible(bool visible)

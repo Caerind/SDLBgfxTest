@@ -202,7 +202,7 @@ bool ImGuiWrapper::Release()
 void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 {
 	// TODO : Forward inputs
-	const char inputChar = -1;
+	const char inputChar = -1; 
 	const float windowWidth = 800;
 	const float windowHeight = 600;
 	const bool keyShift = false;

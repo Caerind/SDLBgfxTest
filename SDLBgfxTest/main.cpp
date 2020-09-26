@@ -33,6 +33,7 @@ int main(int argc, char** argv)
 
         if (!BgfxWrapper::Init(window))
 		{
+            window.Close();
 			SDLWrapper::Release();
 			Debug("Can't initialize Bgfx\n");
 			return -1;
@@ -40,7 +41,8 @@ int main(int argc, char** argv)
 #ifdef ENGINE_IMGUI
         if (!ImGuiWrapper::Init())
 		{
-            BgfxWrapper::Release();
+			window.Close();
+			BgfxWrapper::Release();
 			SDLWrapper::Release();
             Debug("Can't initialize ImGui\n");
             return -1;
@@ -61,7 +63,7 @@ int main(int argc, char** argv)
             }
 
             std::vector<Sprite> sprites;
-            sprites.resize(10000);
+            sprites.resize(1000);
             for (auto& sprite : sprites)
 			{
 				sprite.SetTexture(texture);
@@ -80,7 +82,7 @@ int main(int argc, char** argv)
 			const bgfx::ViewId imguiViewId = 250;
 			bool imguiDemoVisible = true;
 
-            while (window.IsOpen())
+            while (!window.ShouldClose())
             {
                 Mouse::Refresh();
 
@@ -95,7 +97,7 @@ int main(int argc, char** argv)
                         Mouse::HandleEvent(event);
                         break;
                     }
-                    case SDL_QUIT:
+                    case SDL_QUIT: 
                     {
                         window.Close();
                         break;
@@ -108,20 +110,25 @@ int main(int argc, char** argv)
                             BgfxWrapper::ToggleDisplayStats();
 #endif // ENGINE_DEBUG
                         }
+                        break;
                     }
                     case SDL_WINDOWEVENT:
                     {
                         switch (event.window.event)
                         {
-                        case SDL_WINDOWEVENT_CLOSE:
+                        case SDL_WINDOWEVENT_CLOSE: 
+                        {
                             window.Close();
                             break;
                         }
-                    } break;
+                        }
+                        break;
+                    } 
                     }
-                }
-                if (!window.IsOpen())
-                {
+				}
+                if (window.ShouldClose())
+				{
+					bgfx::frame();
                     break;
                 }
 
@@ -131,8 +138,13 @@ int main(int argc, char** argv)
                 ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
 
-
                 bgfx::touch(BgfxWrapper::kClearView);
+
+                bgfx::dbgTextClear();
+                const Vector2i dbgMousePos = Mouse::GetPositionCurrentWindow();
+                const Vector2i dbgMouseDeltaPos = Mouse::GetDeltaPosition();
+                const I32 dbgMouseWheel = Mouse::GetWheel();
+                bgfx::dbgTextPrintf(0, 0, 0x0f, "Mouse: (%d, %d) (%d, %d) (%d)", dbgMousePos.x, dbgMousePos.y, dbgMouseDeltaPos.x, dbgMouseDeltaPos.y, dbgMouseWheel);
 
 				bgfx::setViewTransform(BgfxWrapper::kClearView, view, proj);
 
@@ -148,8 +160,9 @@ int main(int argc, char** argv)
 #ifdef ENGINE_IMGUI
         ImGuiWrapper::Release();
 #endif // ENGINE_IMGUI
-        BgfxWrapper::Release();
-    }
-    SDLWrapper::Release();
+		BgfxWrapper::Release();
+	}
+	SDLWrapper::Release();
+    Debug("Exited properly");
     return 0;
 }

@@ -12,7 +12,7 @@ namespace NAMESPACE_NAME
 class SDLWrapper
 {
 public:
-	static bool Init(U32 initFlags = SDL_INIT_EVERYTHING);
+	static bool Init();
 	static bool IsInitialized();
 	static bool Release();
 
