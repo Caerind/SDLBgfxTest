@@ -33,34 +33,44 @@ mkdir -p build/SDLBgfxTest/shaders/metal
 mkdir -p build/SDLBgfxTest/shaders/pssl
 mkdir -p build/SDLBgfxTest/shaders/spirv
 
-# DX9
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.vs" -o "build/SDLBgfxTest/shaders/dx9/sprite.vs.bin" --platform windows -p vs_3_0 -O 3 --type vertex --verbose -i bgfx/bgfx/src
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.fs" -o "build/SDLBgfxTest/shaders/dx9/sprite.fs.bin" --platform windows -p ps_3_0 -O 3 --type fragment --verbose -i bgfx/bgfx/src
+includepath="bgfx/bgfx/src"
+allfsfiles="`find SDLBgfxTest/shaders -name *.fs`"
+for fsfile in $allfsfiles
+do
+    basename="`echo $fsfile | cut -f 1 -d '.'`"
+    vsfile="${basename}.vs"
+    fsbin="build/${fsfile}.bin"
+    vsbin="build/${vsfile}.bin"
 
-# DX11
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.vs" -o "build/SDLBgfxTest/shaders/dx11/sprite.vs.bin" --platform windows -p vs_5_0 -O 3 --type vertex --verbose -i bgfx/bgfx/src
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.fs" -o "build/SDLBgfxTest/shaders/dx11/sprite.fs.bin" --platform windows -p ps_5_0 -O 3 --type fragment --verbose -i bgfx/bgfx/src
+    # DX9
+    ${path_shaderc} -f "${vsfile}" -o "${vsbin}" --platform windows -p vs_3_0 -O 3 --type vertex --verbose -i $includepath
+    ${path_shaderc} -f "${fsfile}" -o "${fsbin}" --platform windows -p ps_3_0 -O 3 --type fragment --verbose -i $includepath
 
-# NACL
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.vs" -o "build/SDLBgfxTest/shaders/essl/sprite.vs.bin" --platform nacl --type vertex --verbose -i bgfx/bgfx/src
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.fs" -o "build/SDLBgfxTest/shaders/essl/sprite.fs.bin" --platform nacl --type fragment --verbose -i bgfx/bgfx/src
+    # DX11
+    ${path_shaderc} -f "${vsfile}" -o "${vsbin}" --platform windows -p vs_5_0 -O 3 --type vertex --verbose -i $includepath
+    ${path_shaderc} -f "${fsfile}" -o "${fsbin}" --platform windows -p ps_5_0 -O 3 --type fragment --verbose -i $includepath
 
-# Android
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.vs" -o "build/SDLBgfxTest/shaders/essl/sprite.vs.bin" --platform android --type vertex --verbose -i bgfx/bgfx/src
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.fs" -o "build/SDLBgfxTest/shaders/essl/sprite.fs.bin" --platform android --type fragment --verbose -i bgfx/bgfx/src
+    # NACL
+    ${path_shaderc} -f "${vsfile}" -o "${vsbin}" --platform nacl --type vertex --verbose -i $includepath
+    ${path_shaderc} -f "${fsfile}" -o "${fsbin}" --platform nacl --type fragment --verbose -i $includepath
 
-# GLSL
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.vs" -o "build/SDLBgfxTest/shaders/glsl/sprite.vs.bin" --platform linux -p 120 --type vertex --verbose -i bgfx/bgfx/src
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.fs" -o "build/SDLBgfxTest/shaders/glsl/sprite.fs.bin" --platform linux -p 120 --type fragment --verbose -i bgfx/bgfx/src
+    # Android
+    ${path_shaderc} -f "${vsfile}" -o "${vsbin}" --platform android --type vertex --verbose -i $includepath
+    ${path_shaderc} -f "${fsfile}" -o "${fsbin}" --platform android --type fragment --verbose -i $includepath
 
-# Metal
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.vs" -o "build/SDLBgfxTest/shaders/metal/sprite.vs.bin" --platform osx -p metal --type vertex --verbose -i bgfx/bgfx/src
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.fs" -o "build/SDLBgfxTest/shaders/metal/sprite.fs.bin" --platform osx -p metal --type fragment --verbose -i bgfx/bgfx/src
+    # GLSL
+    ${path_shaderc} -f "${vsfile}" -o "${vsbin}" --platform linux -p 120 --type vertex --verbose -i $includepath
+    ${path_shaderc} -f "${fsfile}" -o "${fsbin}" --platform linux -p 120 --type fragment --verbose -i $includepath
 
-# PSSL
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.vs" -o "build/SDLBgfxTest/shaders/pssl/sprite.vs.bin" --platform orbis -p pssl --type vertex --verbose -i bgfx/bgfx/src
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.fs" -o "build/SDLBgfxTest/shaders/pssl/sprite.fs.bin" --platform orbis -p pssl --type fragment --verbose -i bgfx/bgfx/src
+    # Metal
+    ${path_shaderc} -f "${vsfile}" -o "${vsbin}" --platform osx -p metal --type vertex --verbose -i $includepath
+    ${path_shaderc} -f "${fsfile}" -o "${fsbin}" --platform osx -p metal --type fragment --verbose -i $includepath
 
-# Spirv
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.vs" -o "build/SDLBgfxTest/shaders/spirv/sprite.vs.bin" --platform linux -p spirv --type vertex --verbose -i bgfx/bgfx/src
-${path_shaderc} -f "SDLBgfxTest/shaders/sprite.fs" -o "build/SDLBgfxTest/shaders/spirv/sprite.fs.bin" --platform linux -p spirv --type fragment --verbose -i bgfx/bgfx/src
+    # PSSL
+    ${path_shaderc} -f "${vsfile}" -o "${vsbin}" --platform orbis -p pssl --type vertex --verbose -i $includepath
+    ${path_shaderc} -f "${fsfile}" -o "${fsbin}" --platform orbis -p pssl --type fragment --verbose -i $includepath
+
+    # Spirv
+    ${path_shaderc} -f "${vsfile}" -o "${vsbin}" --platform linux -p spirv --type vertex --verbose -i $includepath
+    ${path_shaderc} -f "${fsfile}" -o "${fsbin}" --platform linux -p spirv --type fragment --verbose -i $includepath
+done
