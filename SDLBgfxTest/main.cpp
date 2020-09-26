@@ -12,6 +12,7 @@
 #include "Sprite.hpp"
 #include "Texture.hpp"
 #include "Mouse.hpp"
+#include "Keyboard.hpp"
 
 using namespace NAMESPACE_NAME;
 
@@ -34,6 +35,7 @@ int main(int argc, char** argv)
         if (!BgfxWrapper::Init(window))
 		{
             window.Close();
+            window.Destroy();
 			SDLWrapper::Release();
 			Debug("Can't initialize Bgfx\n");
 			return -1;
@@ -41,8 +43,9 @@ int main(int argc, char** argv)
 #ifdef ENGINE_IMGUI
         if (!ImGuiWrapper::Init())
 		{
-			window.Close();
+            window.Close();
 			BgfxWrapper::Release();
+			window.Destroy();
 			SDLWrapper::Release();
             Debug("Can't initialize ImGui\n");
             return -1;
@@ -52,11 +55,13 @@ int main(int argc, char** argv)
         {
             Texture texture;
             if (!texture.Initialize("fieldstone-rgba.dds"))
-            {
+			{
+				window.Close();
 #ifdef ENGINE_IMGUI
                 ImGuiWrapper::Release();
 #endif // ENGINE_IMGUI
 				BgfxWrapper::Release();
+				window.Destroy();
 				SDLWrapper::Release();
 				Debug("Can't load texture\n");
                 return -1;
@@ -85,6 +90,7 @@ int main(int argc, char** argv)
             while (!window.ShouldClose())
             {
                 Mouse::Refresh();
+                Keyboard::Refresh();
 
                 SDL_Event event;
                 while (SDLWrapper::PollEvent(event))
@@ -97,19 +103,16 @@ int main(int argc, char** argv)
                         Mouse::HandleEvent(event);
                         break;
                     }
+                    case SDL_KEYDOWN:
+                    case SDL_KEYUP:
+                    case SDL_TEXTINPUT:
+                    {
+                        Keyboard::HandleEvent(event);
+                        break;
+                    }
                     case SDL_QUIT: 
                     {
                         window.Close();
-                        break;
-                    }
-                    case SDL_KEYDOWN:
-                    {
-                        if (event.key.keysym.sym == SDLK_F3)
-                        {
-#ifdef ENGINE_DEBUG
-                            BgfxWrapper::ToggleDisplayStats();
-#endif // ENGINE_DEBUG
-                        }
                         break;
                     }
                     case SDL_WINDOWEVENT:
@@ -137,6 +140,14 @@ int main(int argc, char** argv)
                 ImGui::ShowDemoWindow(&imguiDemoVisible);
                 ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
+
+                if (Keyboard::IsControlHold() && Keyboard::IsPressed(Keyboard::Key::F3))
+				{
+#ifdef ENGINE_DEBUG
+					BgfxWrapper::ToggleDisplayStats();
+#endif // ENGINE_DEBUG
+                }
+
 
                 bgfx::touch(BgfxWrapper::kClearView);
 

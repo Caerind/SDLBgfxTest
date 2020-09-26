@@ -18,6 +18,7 @@
 #include "embedded_shaders/fs_imgui_image.bin.h"
 
 #include "Mouse.hpp"
+#include "Keyboard.hpp"
 
 namespace NAMESPACE_NAME
 {
@@ -74,30 +75,29 @@ bool ImGuiWrapper::Init()
 	style.FrameRounding = 4.0f;
 	style.WindowBorderSize = 0.0f;
 
-	// TODO : Keys
-	/*
-	io.KeyMap[ImGuiKey_Tab]        = (int)entry::Key::Tab;
-	io.KeyMap[ImGuiKey_LeftArrow]  = (int)entry::Key::Left;
-	io.KeyMap[ImGuiKey_RightArrow] = (int)entry::Key::Right;
-	io.KeyMap[ImGuiKey_UpArrow]    = (int)entry::Key::Up;
-	io.KeyMap[ImGuiKey_DownArrow]  = (int)entry::Key::Down;
-	io.KeyMap[ImGuiKey_PageUp]     = (int)entry::Key::PageUp;
-	io.KeyMap[ImGuiKey_PageDown]   = (int)entry::Key::PageDown;
-	io.KeyMap[ImGuiKey_Home]       = (int)entry::Key::Home;
-	io.KeyMap[ImGuiKey_End]        = (int)entry::Key::End;
-	io.KeyMap[ImGuiKey_Insert]     = (int)entry::Key::Insert;
-	io.KeyMap[ImGuiKey_Delete]     = (int)entry::Key::Delete;
-	io.KeyMap[ImGuiKey_Backspace]  = (int)entry::Key::Backspace;
-	io.KeyMap[ImGuiKey_Space]      = (int)entry::Key::Space;
-	io.KeyMap[ImGuiKey_Enter]      = (int)entry::Key::Return;
-	io.KeyMap[ImGuiKey_Escape]     = (int)entry::Key::Esc;
-	io.KeyMap[ImGuiKey_A]          = (int)entry::Key::KeyA;
-	io.KeyMap[ImGuiKey_C]          = (int)entry::Key::KeyC;
-	io.KeyMap[ImGuiKey_V]          = (int)entry::Key::KeyV;
-	io.KeyMap[ImGuiKey_X]          = (int)entry::Key::KeyX;
-	io.KeyMap[ImGuiKey_Y]          = (int)entry::Key::KeyY;
-	io.KeyMap[ImGuiKey_Z]          = (int)entry::Key::KeyZ;
+	io.KeyMap[ImGuiKey_Tab]        = (int)Keyboard::Key::Tab;
+	io.KeyMap[ImGuiKey_LeftArrow]  = (int)Keyboard::Key::Left;
+	io.KeyMap[ImGuiKey_RightArrow] = (int)Keyboard::Key::Right;
+	io.KeyMap[ImGuiKey_UpArrow]    = (int)Keyboard::Key::Up;
+	io.KeyMap[ImGuiKey_DownArrow]  = (int)Keyboard::Key::Down;
+	io.KeyMap[ImGuiKey_PageUp]     = (int)Keyboard::Key::PageUp;
+	io.KeyMap[ImGuiKey_PageDown]   = (int)Keyboard::Key::PageDown;
+	io.KeyMap[ImGuiKey_Home]       = (int)Keyboard::Key::Home;
+	io.KeyMap[ImGuiKey_End]        = (int)Keyboard::Key::End;
+	io.KeyMap[ImGuiKey_Insert]     = (int)Keyboard::Key::Insert;
+	io.KeyMap[ImGuiKey_Delete]     = (int)Keyboard::Key::Delete;
+	io.KeyMap[ImGuiKey_Backspace]  = (int)Keyboard::Key::Backspace;
+	io.KeyMap[ImGuiKey_Space]      = (int)Keyboard::Key::Space;
+	io.KeyMap[ImGuiKey_Enter]      = (int)Keyboard::Key::Return;
+	io.KeyMap[ImGuiKey_Escape]     = (int)Keyboard::Key::Escape;
+	io.KeyMap[ImGuiKey_A]          = (int)Keyboard::Key::A;
+	io.KeyMap[ImGuiKey_C]          = (int)Keyboard::Key::C;
+	io.KeyMap[ImGuiKey_V]          = (int)Keyboard::Key::V;
+	io.KeyMap[ImGuiKey_X]          = (int)Keyboard::Key::X;
+	io.KeyMap[ImGuiKey_Y]          = (int)Keyboard::Key::Y;
+	io.KeyMap[ImGuiKey_Z]          = (int)Keyboard::Key::Z;
 
+	/*
 	io.ConfigFlags |= 0
 		| ImGuiConfigFlags_NavEnableGamepad
 		| ImGuiConfigFlags_NavEnableKeyboard
@@ -158,9 +158,9 @@ bool ImGuiWrapper::Init()
 		config.MergeMode = true;
 		config.DstFont = imgui.mFonts[ImGui::Font::Regular];
 
-		for (uint32_t ii = 0; ii < BX_COUNTOF(s_fontRangeMerge); ++ii)
+		for (uint32_t i = 0; i < BX_COUNTOF(s_fontRangeMerge); ++i)
 		{
-			const FontRangeMerge& frm = s_fontRangeMerge[ii];
+			const FontRangeMerge& frm = s_fontRangeMerge[i];
 			io.Fonts->AddFontFromMemoryTTF((void*)frm.data, (int)frm.size, fontSize - 3.0f, &config, frm.ranges);
 		}
 	}
@@ -202,13 +202,8 @@ bool ImGuiWrapper::Release()
 void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 {
 	// TODO : Forward inputs
-	const char inputChar = -1; 
 	const float windowWidth = 800;
 	const float windowHeight = 600;
-	const bool keyShift = false;
-	const bool keyControl = false;
-	const bool keyAlt = false;
-	// + keys states
 
 	ImGuiWrapper& imgui = GetInstance();
 	assert(imgui.mInitialized);
@@ -216,10 +211,6 @@ void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 	imgui.mViewId = viewId;
 
 	ImGuiIO& io = ImGui::GetIO();
-	if (inputChar >= 0)
-	{
-		io.AddInputCharacter(inputChar);
-	}
 	io.DisplaySize = ImVec2(windowWidth, windowHeight);
 
 	const I64 now = bx::getHPCounter();
@@ -237,17 +228,20 @@ void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 	io.MouseDown[4] = Mouse::IsPressed(Mouse::Button::X2);
 	io.MouseWheel = static_cast<float>(Mouse::GetWheel());
 
-	io.KeyShift = keyShift;
-	io.KeyCtrl = keyControl;
-	io.KeyAlt = keyAlt;
-
-	// TODO : Keys
-	/*
-	for (int32_t ii = 0; ii < (int32_t)entry::Key::Count; ++ii)
+	static constexpr U32 keyCount = static_cast<U32>(Keyboard::Key::Count);
+	for (U32 i = 0; i < keyCount; ++i)
 	{
-		io.KeysDown[ii] = inputGetKeyState(entry::Key::Enum(ii));
+		io.KeysDown[i] = Keyboard::IsHold(static_cast<Keyboard::Key>(i));
 	}
-	*/
+	io.KeyShift = Keyboard::IsShiftHold();
+	io.KeyCtrl = Keyboard::IsControlHold();
+	io.KeyAlt = Keyboard::IsAltHold();
+	const U32 inputCharacterCount = Keyboard::GetInputCharacterCount();
+	const char* inputCharacters = Keyboard::GetInputCharacters();
+	for (U32 i = 0; i < inputCharacterCount; ++i)
+	{
+		io.AddInputCharacter(inputCharacters[i]);
+	}
 
 	ImGui::NewFrame();
 	ImGuizmo::BeginFrame();
