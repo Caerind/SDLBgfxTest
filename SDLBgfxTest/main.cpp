@@ -78,10 +78,8 @@ int main(int argc, char** argv)
 			Camera camera;
             {
                 // Projection
-                camera.SetFOV(60.0f);
-                camera.SetNearPlane(0.1f);
-                camera.SetFarPlane(100.0f);
-                camera.SetRatio(F32(window.GetWidth()) / F32(window.GetHeight()));
+                camera.InitializePerspective(60.0f, F32(window.GetWidth()) / F32(window.GetHeight()), 0.1f, 100.0f);
+                //camera.InitializeOrthographic(-10.0f, -10.0f, 10.0f, 10.0f, 0.1f, 100.0f);
 
                 // View
                 camera.SetPosition(Vector3f(0.0f, 0.0f, 5.0f));

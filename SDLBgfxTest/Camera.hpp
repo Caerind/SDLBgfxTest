@@ -16,19 +16,40 @@ public:
 
     // Projection
 
-    void InitializePerspective(F32 fov, F32 nearPlane, F32 farPlane, F32 ratio);
+    enum class ProjectionMode
+    {
+        Perspective,
+        Orthographic
+    };
+    void SetProjection(ProjectionMode projection);
+    ProjectionMode GetProjection() const;
+
+    void InitializePerspective(F32 fov, F32 ratio, F32 nearPlane, F32 farPlane);
+	void InitializeOrthographic(F32 left, F32 top, F32 right, F32 bottom, F32 nearPlane, F32 farPlane);
+
+	void SetNearPlane(F32 nearPlane);
+	F32 GetNearPlane() const;
+
+	void SetFarPlane(F32 farPlane);
+	F32 GetFarPlane() const;
 
     void SetFOV(F32 fov);
     F32 GetFOV() const;
 
-    void SetNearPlane(F32 nearPlane);
-    F32 GetNearPlane() const;
-
-    void SetFarPlane(F32 farPlane);
-    F32 GetFarPlane() const;
-
     void SetRatio(F32 ratio);
     F32 GetRatio() const;
+
+    void SetLeft(F32 left);
+    F32 GetLeft() const;
+
+    void SetTop(F32 top);
+    F32 GetTop() const;
+
+    void SetRight(F32 right);
+    F32 GetRight() const;
+
+    void SetBottom(F32 bottom);
+    F32 GetBottom() const;
 
     const F32* GetProjectionMatrix() const;
 
@@ -52,19 +73,40 @@ private:
     void UpdateViewMatrix() const;
 
 private:
-    // TODO : Reorder elements
-    mutable F32 mProjectionMatrix[16];
-    F32 mFov;
-    F32 mNearPlane;
-    F32 mFarPlane;
-    F32 mRatio;
-    mutable bool mProjectionDirty;
+    struct PerspectiveData
+	{
+		F32 nearPlane;
+		F32 farPlane;
+		F32 fov;
+		F32 ratio;
+	};
+
+	struct OrthographicData
+	{
+		F32 nearPlane;
+		F32 farPlane;
+		F32 left;
+		F32 top;
+		F32 right;
+		F32 bottom;
+	};
+
+	// TODO : Reorder elements
+
+	mutable F32 mProjectionMatrix[16];
+	union
+	{
+		PerspectiveData perspective;
+		OrthographicData orthographic;
+	};
+    ProjectionMode mProjectionMode;
+	mutable bool mProjectionDirty;
 
     mutable F32 mViewMatrix[16];
     Vector3f mPosition;
     Vector3f mLookAt;
-    Vector3f mUpVector;
-    mutable bool mViewDirty;
+	Vector3f mUpVector;
+	mutable bool mViewDirty;
 };
 
 } // namespace NAMESPACE_NAME
