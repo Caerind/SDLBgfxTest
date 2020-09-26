@@ -16,6 +16,8 @@ add_executable(SDLBGFXTest
 	Sprite.hpp 
 	Sprite.cpp 
 	ImGuiWrapper.hpp 
-	ImGuiWrapper.cpp 
+	ImGuiWrapper.cpp
+	Mouse.hpp
+	Mouse.cpp
 	main.cpp)
 target_link_libraries(SDLBGFXTest PUBLIC SDL2 SDL2main bgfx dear-imgui)

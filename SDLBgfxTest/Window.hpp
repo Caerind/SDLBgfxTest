@@ -13,14 +13,15 @@ class Window
 {
 public:
     Window();
-    Window(const char* name, I32 width, I32 height);
     ~Window();
 
     bool Create(const char* name, I32 width, I32 height, U32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+	void Destroy();
+	bool IsValid() const;
 
     void Close();
-
-    bool IsOpen() const;
+	void ResetShouldClose();
+	bool ShouldClose() const;
 
     void SetVisible(bool visible);
     bool IsVisible() const;
@@ -42,8 +43,17 @@ public:
 
 private:
     friend class BgfxWrapper;
+    friend class Mouse;
 
     SDL_Window* mWindow;
+    bool mShouldClose;
+
+    static constexpr U32 kMaxWindows = 10;
+    static U32 sWindowCount;
+    static Window* sWindows[kMaxWindows];
+    static void RegisterWindow(Window* window);
+    static void UnregisterWindow(Window* window);
+    static Window* GetWindowFromSDL(SDL_Window* sdlWindow);
 };
 
 } // namespace NAMESPACE_NAME

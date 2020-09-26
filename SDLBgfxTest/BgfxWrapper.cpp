@@ -141,12 +141,19 @@ bool BgfxWrapper::Init(Window& window)
     pd.backBufferDS = NULL;
     bgfx::setPlatformData(pd);
 
+	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
+	// Most graphics APIs must be used on the same thread that created the window.
+    bgfx::renderFrame();
+
     bgfx::Init init;
     init.type = bgfx::RendererType::Count; // Automatically choose a renderer
     init.resolution.width = window.GetWidth();
     init.resolution.height = window.GetHeight();
     init.resolution.reset = BGFX_RESET_VSYNC;
-    bgfx::init(init);
+    if (!bgfx::init(init))
+    {
+        return false;
+    }
 
 #ifdef ENGINE_DEBUG
     bgfx::setDebug(BGFX_DEBUG_TEXT);

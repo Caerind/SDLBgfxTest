@@ -17,6 +17,8 @@
 #include "embedded_shaders/vs_imgui_image.bin.h"
 #include "embedded_shaders/fs_imgui_image.bin.h"
 
+#include "Mouse.hpp"
+
 namespace NAMESPACE_NAME
 {
 
@@ -53,7 +55,6 @@ bool ImGuiWrapper::Init()
 	static bx::DefaultAllocator defaultAllocator;
 	imgui.mAllocator = &defaultAllocator;
 
-	imgui.mLastScroll = 0;
 	imgui.mLast = bx::getHPCounter();
 	imgui.mViewId = 255;
 
@@ -201,15 +202,9 @@ bool ImGuiWrapper::Release()
 void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 {
 	// TODO : Forward inputs
-	const char inputChar = -1;
+	const char inputChar = -1; 
 	const float windowWidth = 800;
 	const float windowHeight = 600;
-	const float mousePosX = 400;
-	const float mousePosY = 300;
-	const bool mouseLeft = false;
-	const bool mouseRight = false;
-	const bool mouseMiddle = false;
-	const int scroll = 10; // No idea what this value should look like yet
 	const bool keyShift = false;
 	const bool keyControl = false;
 	const bool keyAlt = false;
@@ -232,13 +227,15 @@ void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 	imgui.mLast = now;
 	const double freq = double(bx::getHPFrequency());
 	io.DeltaTime = float(frameTime / freq);
-
-	io.MousePos = ImVec2(mousePosX, mousePosY);
-	io.MouseDown[0] = mouseLeft;
-	io.MouseDown[1] = mouseRight;
-	io.MouseDown[2] = mouseMiddle;
-	io.MouseWheel = (float)(scroll - imgui.mLastScroll);
-	imgui.mLastScroll = scroll;
+	
+	const Vector2i mousePos = Mouse::GetPositionCurrentWindow();
+	io.MousePos = ImVec2(static_cast<F32>(mousePos.x), static_cast<F32>(mousePos.y));
+	io.MouseDown[0] = Mouse::IsPressed(Mouse::Button::Left);
+	io.MouseDown[1] = Mouse::IsPressed(Mouse::Button::Right);
+	io.MouseDown[2] = Mouse::IsPressed(Mouse::Button::Middle);
+	io.MouseDown[3] = Mouse::IsPressed(Mouse::Button::X1);
+	io.MouseDown[4] = Mouse::IsPressed(Mouse::Button::X2);
+	io.MouseWheel = static_cast<float>(Mouse::GetWheel());
 
 	io.KeyShift = keyShift;
 	io.KeyCtrl = keyControl;
@@ -382,7 +379,6 @@ ImGuiWrapper::ImGuiWrapper()
 	, mImageLodEnabled(BGFX_INVALID_HANDLE)
 	, mFonts()
 	, mLast(0)
-	, mLastScroll(0)
 	, mViewId(255)
 {
 }
