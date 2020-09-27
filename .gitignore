@@ -229,6 +229,9 @@ FakesAssemblies/
 *.opt
 
 # Visual Studio LightSwitch build output
+.vscode
+build_web
+emsdk
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
 **/*.DesktopClient/ModelManifest.xml
