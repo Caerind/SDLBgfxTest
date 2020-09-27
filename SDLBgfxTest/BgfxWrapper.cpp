@@ -1,5 +1,20 @@
 #include "BgfxWrapper.hpp"
 
+// Assigning video driver to this platform (ie compiler's defines)
+// Use 'gcc -dM -E - <NUL:' or 'gcc -dM -E - </dev/null' to check what is your current defines
+#if unix || __unix || __unix__ || __linux__ || linux || __linux || __FreeBSD__
+	#define SDL_VIDEO_DRIVER_X11
+    #define SDL_VIDEO_DRIVER_WAYLAND
+#elif __APPLE__ || __MACH__
+    #define SDL_VIDEO_DRIVER_COCOA
+    #define SDL_VIDEO_DRIVER_UIKIT
+#elif _WIN32 || _WIN64 
+	#define SDL_VIDEO_DRIVER_WINDOWS
+    #define SDL_VIDEO_DRIVER_WINRT
+#elif __ANDROID__
+    #define SDL_VIDEO_DRIVER_ANDROID
+#endif
+
 #include <SDL.h>
 #include <SDL_syswm.h>
 
