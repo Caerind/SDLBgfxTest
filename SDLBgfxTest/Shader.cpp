@@ -116,6 +116,7 @@ bgfx::ShaderHandle Shader::CreateModule(const char* filename)
 	FILE* file = fopen(filepath, "rb");
 	if (file == nullptr)
 	{
+		Debug("Cannot load shader: %s\n", filepath);
 		return BGFX_INVALID_HANDLE;
 	}
 	fseek(file, 0, SEEK_END);
