@@ -16,4 +16,4 @@ export PATH="${PATH};${EMSDK_PATH};${EMSDK_PATH}/upstream/share/clang;${EMSDK_PA
 EMSCRIPTEN="${EMSDK_PATH}/upstream/emscripten"
 export CC="./emsdk/upstream/emscripten/emcc"
 export CXX="./emsdk/upstream/emscripten/em++"
-cmake .. -DCMAKE_TOOLCHAIN_FILE=../emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DBX_PLATFORM_EMSCRIPTEN=True -D__EMSCRIPTEN__=True -DENABLE_EMSCRIPTEN_SINGLE_FILE=True -DEMSCRIPTEN=True
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DBX_PLATFORM_EMSCRIPTEN=True -D__EMSCRIPTEN__=True -DENABLE_EMSCRIPTEN_SINGLE_FILE=True -DEMSCRIPTEN=True -DBGFX_CONFIG_RENDERER_WEBGPU=True
