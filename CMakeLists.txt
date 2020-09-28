@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.12...3.15)
 
 if(EMSCRIPTEN)
     include("./emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake")
+    set(CMAKE_STATIC_LIBRARY_SUFFIX ".bc")
+    set(PLATFORM_CPP "PLATFORM_WEB")
+    set(GRAPHICS "GRAPHICS_API_OPENGL_ES2")
+    set(BGFX_CONFIG_RENDERER_WEBGPU True)
 endif()
 
 project(SDLBgfxTestProject
