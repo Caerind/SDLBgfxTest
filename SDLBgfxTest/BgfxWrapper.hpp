@@ -1,8 +1,9 @@
 #pragma once
 
+#include "EngineIntegration.hpp"
+
 #include <bgfx/bgfx.h>
 
-#include "EngineIntegration.hpp"
 #include "Window.hpp"
 
 namespace NAMESPACE_NAME

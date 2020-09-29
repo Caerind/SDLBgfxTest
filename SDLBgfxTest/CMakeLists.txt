@@ -2,7 +2,14 @@ add_executable(SDLBGFXTest
 	shaders/sprite.vs
 	shaders/sprite.fs
 	shaders/varying.def.sc
-	EngineIntegration.hpp 
+	EngineIntegration.hpp
+	Math/Math.hpp
+	Math/Vector2.hpp
+	Math/Vector3.hpp
+	Math/Vector4.hpp
+	Math/Matrix3.hpp
+	Math/Matrix4.hpp
+	Math/Quaternion.hpp
 	SDLWrapper.hpp 
 	SDLWrapper.cpp 
 	Window.hpp 

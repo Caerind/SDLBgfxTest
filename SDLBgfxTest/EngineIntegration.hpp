@@ -8,21 +8,14 @@
 #include <utility>
 
 #if unix || __unix || __unix__ || __linux__ || linux || __linux || __FreeBSD__
-	#define ENGINE_PLATFORM_X11
-	#define ENGINE_PLATFORM_WAYLAND
+	#define ENGINE_PLATFORM_LINUX
 #elif __APPLE__ || __MACH__
-	#define ENGINE_PLATFORM_COCOA
-	#define ENGINE_PLATFORM_UIKIT
+	#define ENGINE_PLATFORM_APPLE
 #elif _WIN32 || _WIN64 
 	#define ENGINE_PLATFORM_WINDOWS
-	//#define ENGINE_PLATFORM_WINRT
 #elif __ANDROID__
 	#define ENGINE_PLATFORM_ANDROID
 #endif
-
-//#define ENGINE_PLATFORM_DIRECTFB
-//#define ENGINE_PLATFORM_MIR
-//#define ENGINE_PLATFORM_VIVANTE
 
 #define ENGINE_DEBUG
 #define ENGINE_IMGUI
@@ -41,41 +34,6 @@ namespace NAMESPACE_NAME
 	using I64 = std::int64_t;
 	using F32 = float;
 	using F64 = double;
-
-	template <typename T>
-	struct Vector2
-	{
-		Vector2() : x(T(0)), y(T(0)) {}
-		Vector2(T s) : x(s), y(s) {}
-		Vector2(T _x, T _y) : x(_x), y(_y) {}
-
-		bool operator==(const Vector2& other) const { return x == other.x && y == other.y; }
-		bool operator!=(const Vector2& other) const { return !operator==(other); }
-
-		T x;
-		T y;
-	};
-	using Vector2f = Vector2<F32>;
-	using Vector2u = Vector2<U32>;
-	using Vector2i = Vector2<I32>;
-
-	template <typename T>
-	struct Vector3
-	{
-		Vector3() : x(T(0)), y(T(0)), z(T(0)) {}
-		Vector3(T s) : x(s), y(s), z(s) {}
-		Vector3(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
-
-		bool operator==(const Vector3& other) const { return x == other.x && y == other.y && z == other.z; }
-		bool operator!=(const Vector3& other) const { return !operator==(other); }
-
-		T x;
-		T y;
-		T z;
-	};
-	using Vector3f = Vector3<F32>;
-	using Vector3u = Vector3<U32>;
-	using Vector3i = Vector3<I32>;
 
 	template <typename T>
 	struct Rect

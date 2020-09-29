@@ -235,6 +235,13 @@ const F32* Camera::GetViewMatrix() const
 	return mViewMatrix;
 }
 
+void Camera::Move(const Vector3f& movement)
+{
+	mPosition += movement;
+	mLookAt += movement;
+	mViewDirty = true;
+}
+
 void Camera::UpdateProjectionMatrix() const
 {
 	static constexpr bool homogenousDepth = true; // bgfx::getCaps()->homogeneousDepth

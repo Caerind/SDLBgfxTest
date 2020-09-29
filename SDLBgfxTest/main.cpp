@@ -18,6 +18,8 @@ using namespace NAMESPACE_NAME;
 
 bool app(Window& window);
 
+void CameraUpdate(Camera& camera, F32 deltaTime);
+
 int main(int argc, char** argv)
 {
     if (!SDLWrapper::Init())
@@ -91,8 +93,6 @@ bool app(Window& window)
 	F32 spriteBTransform[16];
 	bx::mtxTranslate(spriteBTransform, 2.0f, 2.0f, 0.0f);
 
-	const F32 cameraSpeedZ = 2.0f;
-	const F32 cameraSpeedX = 3.0f;
 	Camera camera;
 	{
 		// Projection
@@ -167,35 +167,14 @@ bool app(Window& window)
 		lastTime = now;
 		const F32 dt = F32(frameTime / frequency);
 
-		// Move camera
-		bool moved = false;
-		Vector3f pos = camera.GetPosition();
-		const F32 mvtZ = dt * cameraSpeedZ;
-		if (Keyboard::IsHold(Keyboard::Key::Up))
-		{
-			pos.z -= mvtZ;
-			moved = true;
-		}
-		if (Keyboard::IsHold(Keyboard::Key::Down))
-		{
-			pos.z += mvtZ;
-			moved = true;
-		}
-		const F32 mvtX = dt * cameraSpeedX;
-		if (Keyboard::IsHold(Keyboard::Key::Right))
-		{
-			pos.x += mvtX;
-			moved = true;
-		}
-		if (Keyboard::IsHold(Keyboard::Key::Left))
-		{
-			pos.x -= mvtX;
-			moved = true;
-		}
-		if (moved)
-		{
-			camera.SetPosition(pos);
-		}
+		F32 rot[16];
+		bx::mtxRotateY(rot, 3.14152f * dt);
+		F32 copy[16];
+		for (U32 i = 0; i < 16; ++i)
+			copy[i] = spriteBTransform[i];
+		bx::mtxMul(spriteBTransform, copy, rot);
+
+		CameraUpdate(camera, dt);
 
 		// Toggle debug stats
 #ifdef ENGINE_DEBUG
@@ -218,14 +197,59 @@ bool app(Window& window)
 
 			camera.Apply(BgfxWrapper::kClearView);
 
-			spriteA.Render();
+			spriteA.Render(BgfxWrapper::kClearView);
 
 			bgfx::setTransform(spriteBTransform);
-			spriteB.Render();
+			spriteB.Render(BgfxWrapper::kClearView);
 
 			bgfx::frame();
 		}
 	}
 
     return true;
+}
+
+// Inspired by TotalWar controls
+void CameraUpdate(Camera& camera, F32 deltaTime)
+{
+	Vector3f movement;
+	bool moved = false;
+
+	const F32 cameraSpeedYWheel = 1.0f;
+	if (Mouse::GetWheel() != 0)
+	{
+		movement.y += cameraSpeedYWheel * Mouse::GetWheel();
+		moved = true;
+	}
+
+	const F32 cameraSpeedZ = 2.0f;
+	const F32 mvtZ = deltaTime * cameraSpeedZ;
+	if (Keyboard::IsHold(Keyboard::Key::Up))
+	{
+		movement.z -= mvtZ;
+		moved = true;
+	}
+	if (Keyboard::IsHold(Keyboard::Key::Down))
+	{
+		movement.z += mvtZ;
+		moved = true;
+	}
+
+	const F32 cameraSpeedX = 3.0f;
+	const F32 mvtX = deltaTime * cameraSpeedX;
+	if (Keyboard::IsHold(Keyboard::Key::Right))
+	{
+		movement.x += mvtX;
+		moved = true;
+	}
+	if (Keyboard::IsHold(Keyboard::Key::Left))
+	{
+		movement.x -= mvtX;
+		moved = true;
+	}
+	
+	if (moved)
+	{
+		camera.Move(movement);
+	}
 }

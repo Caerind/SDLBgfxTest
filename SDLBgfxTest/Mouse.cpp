@@ -1,5 +1,7 @@
 #include "Mouse.hpp"
 
+#include <SDL.h>
+
 namespace NAMESPACE_NAME
 {
 

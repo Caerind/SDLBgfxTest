@@ -1,8 +1,9 @@
 #pragma once
 
+#include "EngineIntegration.hpp"
+
 #include <bgfx/bgfx.h>
 
-#include "EngineIntegration.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
 
@@ -24,7 +25,7 @@ public:
 	Rectf GetLocalBounds() const;
 	Rectf GetGlobalBounds() const;
 
-	void Render() const;
+	void Render(const bgfx::ViewId& viewId) const;
 
 private:
 	void Update();

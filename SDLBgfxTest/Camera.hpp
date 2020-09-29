@@ -4,6 +4,8 @@
 
 #include <bgfx/bgfx.h>
 
+#include "Math/Vector3.hpp"
+
 namespace NAMESPACE_NAME
 {
 
@@ -67,6 +69,8 @@ public:
     const Vector3f& GetUpVector() const;
     
     const F32* GetViewMatrix() const;
+
+    void Move(const Vector3f& movement);
 
 private:
     void UpdateProjectionMatrix() const;

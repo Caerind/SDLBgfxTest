@@ -1,10 +1,8 @@
 #pragma once
 
-#include <SDL.h>
-
 #include "EngineIntegration.hpp"
 
-// TODO : https://alexandre-laurent.developpez.com/tutoriels/sdl-2/les-evenements/
+#include <SDL.h>
 
 namespace NAMESPACE_NAME
 {

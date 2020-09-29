@@ -2,6 +2,7 @@
 
 #include "EngineIntegration.hpp"
 
+#include "Math/Vector2.hpp"
 #include "Window.hpp"
 
 namespace NAMESPACE_NAME

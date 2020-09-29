@@ -1,8 +1,10 @@
 #pragma once
 
+#include "EngineIntegration.hpp"
+
 #include <bgfx/bgfx.h>
 
-#include "EngineIntegration.hpp"
+#include "Math/Vector3.hpp"
 
 namespace NAMESPACE_NAME
 {
