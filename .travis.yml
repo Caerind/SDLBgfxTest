@@ -14,40 +14,37 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - gcc-8
+            - g++-8
             - cmake
-            - libxrandr-dev
-            - libudev-dev
-            - libopenal-dev
-            - libflac-dev
-            - libvorbis-dev
             - libgl1-mesa-dev
-            - g++-9
+            - x11proto-core-dev
+            - libx11-dev
     script:
-        - export CXX=g++-9
+        - export CXX="g++-8" CC="gcc-8"
         - mkdir build && cd build
         - cmake ..
         - make
 
-#  - name: "Linux clang"
-#    os: linux
-#    dist: bionic
-#    compiler: clang
-#    addons:
-#        apt:
-#          sources:
-#            - ubuntu-toolchain-r-test
-#          packages:
-#            - cmake
-#            - libxrandr-dev
-#            - libudev-dev
-#            - libopenal-dev
-#            - libflac-dev
-#            - libvorbis-dev
-#            - libgl1-mesa-dev
-#    script:
-#        - mkdir build && cd build
-#        - cmake ..
-#        - make
+  - name: "Linux clang"
+    os: linux
+    dist: bionic
+    compiler: clang
+    addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - clang
+            - cmake
+            - libgl1-mesa-dev
+            - x11proto-core-dev
+            - libx11-dev
+    script:
+        - export CXX="clang" CC="clang"
+        - mkdir build && cd build
+        - cmake ..
+        - make
 
   - name: "macOS Xcode 12"
     os: osx
@@ -55,13 +52,11 @@ matrix:
     addons:
         apt:
           packages:
+            - clang
             - cmake
-            - libxrandr-dev
-            - libudev-dev
-            - libopenal-dev
-            - libflac-dev
-            - libvorbis-dev
             - libgl1-mesa-dev
+            - x11proto-core-dev
+            - libx11-dev
     script:
         - mkdir build && cd build
         - cmake ..
