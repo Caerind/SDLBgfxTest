@@ -37,15 +37,15 @@ int main(int argc, char** argv)
 {
     if (!SDLWrapper::Init())
 	{
-		Debug("Can't initialize SDL : %s\n", SDLWrapper::GetError());
+		assert(false);
         return -1;
     }
     {
         Window window;
         if (!window.Create("SDL & bgfx", 800, 600))
         {
-            SDLWrapper::Release();
-            Debug("Can't create Window\n");
+			SDLWrapper::Release();
+			assert(false);
             return -1;
         }
 
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
             window.Close();
             window.Destroy();
 			SDLWrapper::Release();
-			Debug("Can't initialize Bgfx\n");
+			assert(false);
 			return -1;
         }
 #ifdef ENGINE_IMGUI
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 			BgfxWrapper::Release();
 			window.Destroy();
 			SDLWrapper::Release();
-            Debug("Can't initialize ImGui\n");
+			assert(false);
             return -1;
         }
 #endif // ENGINE_IMGUI
@@ -78,7 +78,6 @@ int main(int argc, char** argv)
 		BgfxWrapper::Release();
 	}
 	SDLWrapper::Release();
-    Debug("Exited properly");
     return 0;
 }
 
@@ -88,14 +87,14 @@ bool app(Window& window)
 	const char* textureAFilename = "fieldstone-rgba.dds";
 	if (!textureA.Initialize(textureAFilename))
 	{
-		Debug("Can't load texture A : %s\n", textureAFilename);
+		assert(false);
 	}
 
 	Texture textureB;
 	const char* textureBFilename = "ship_default.png";
 	if (!textureB.Initialize(textureBFilename))
 	{
-		Debug("Can't load texture B : %s\n", textureBFilename);
+		assert(false);
 	}
 
 	Sprite spriteA;
@@ -171,6 +170,15 @@ bool app(Window& window)
 		ImGui::Checkbox("Use debug camera", &cameraOldFps);
 		ImGui::End();
 		//ImGui::ShowDemoWindow();
+		ImGuiIO& io = ImGui::GetIO();
+		ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+		ImGuizmo::Manipulate(
+			camera.GetViewMatrix().GetData(),
+			camera.GetProjectionMatrix().GetData(),
+			ImGuizmo::TRANSLATE,
+			ImGuizmo::WORLD,
+			spriteATransform.GetData()
+		);
 		ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
 

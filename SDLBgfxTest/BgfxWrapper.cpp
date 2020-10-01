@@ -120,7 +120,7 @@ bool BgfxWrapper::Init(Window& window)
     case SDL_SYSWM_UNKNOWN:
     default:
     {
-		Debug("SDL cannot detect the platform\n");
+        assert(false);
         return false;
     }
     }

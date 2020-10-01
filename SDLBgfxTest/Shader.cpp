@@ -70,6 +70,12 @@ bool Shader::HasFragmentModule() const
 	return bgfx::isValid(mFragmentModule);
 }
 
+void Shader::Submit(bgfx::ViewId viewId)
+{
+	assert(IsValid());
+	bgfx::submit(viewId, mShaderProgram);
+}
+
 bgfx::ShaderHandle Shader::CreateModule(const char* filename)
 {
 	if (filename == nullptr || strlen(filename) == 0)

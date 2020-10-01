@@ -1,11 +1,18 @@
 set(SRC_MATH
+	Math/AABB.hpp
+	Math/Color.hpp
+	Math/Frustum.hpp
 	Math/Math.hpp
+	Math/Matrix3.hpp
+	Math/Matrix4.hpp
+	Math/Plane.hpp
+	Math/Quaternion.hpp
+	Math/Ray.hpp
+	Math/Rect.hpp
+	Math/Sphere.hpp
 	Math/Vector2.hpp
 	Math/Vector3.hpp
 	Math/Vector4.hpp
-	Math/Matrix3.hpp
-	Math/Matrix4.hpp
-	Math/Quaternion.hpp
 )
 source_group("Math" FILES ${SRC_MATH})
 
@@ -28,6 +35,8 @@ add_executable(SDLBGFXTest
 	ImGuiWrapper.cpp
 	Mouse.hpp
 	Mouse.cpp
+	Mesh.hpp
+	Mesh.cpp
 	Keyboard.hpp
 	Keyboard.cpp
 	Camera.hpp

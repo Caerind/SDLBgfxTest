@@ -1,0 +1,138 @@
+#pragma once
+
+#include "../EngineIntegration.hpp"
+
+#include "Vector2.hpp"
+
+namespace NAMESPACE_NAME
+{
+
+template <typename T>
+class Rect
+{
+public:
+	constexpr Rect() : mMin(), mMax() {}
+	constexpr Rect(const Vector2<T>& min, const Vector2<T>& max) : mMin(min), mMax(min + max) {}
+	constexpr Rect(T minX, T minY, T sizeX, T sizeY) : mMin(minX, minY), mMax(minX + sizeX, minY + sizeY) {}
+
+	constexpr const Vector2<T>& GetMin() const { return mMin; }
+	constexpr void SetMin(const Vector2<T>& min) { mMin = min; }
+	constexpr void SetMin(T minX, T minY) { mMin.Set(minX, minY); }
+	
+	constexpr const Vector2<T>& GetMax() const { return mMax; }
+	constexpr void SetMax(const Vector2<T>& max) { mMax = max; }
+	constexpr void SetMax(T maxX, T maxY) { mMax.Set(maxX, maxY); }
+
+	constexpr T Left() const { return mMin.x; }
+	constexpr T Top() const { return mMin.y; }
+	constexpr T Right() const { return mMax.x; }
+	constexpr T Bottom() const { return mMax.y; }
+	constexpr T Width() const { return mMax.x - mMin.x; }
+	constexpr T Height() const { return mMax.y - mMin.y; }
+
+	constexpr Vector2<T> GetCenter() const { return (mMin + mMax) * 0.5f; }
+	constexpr Vector2<T> GetSize() const { return mMax - mMin; }
+	constexpr Vector2<T> GetHalfSize() const { return (mMax - mMin) * 0.5f; }
+	constexpr T GetArea() const { const Vector2f size = GetSize(); return size.x * size.y; } 
+
+	/*
+	0---1
+	|   |
+	3---2
+	*/
+	constexpr Vector2<T> GetCorner(U32 index) const
+	{
+		switch (index)
+		{
+		case 0:
+			return mMin;
+		case 1:
+			return Vector2<T>(mMax.x, mMin.y);
+		case 2:
+			return mMax;
+		case 3:
+			return Vector2<T>(mMin.x, mMax.y);
+		default:
+			break;
+		}
+		return Vector2<T>();
+	}
+
+	constexpr T GetSquaredDistance(const Vector2<T>& point) const
+	{
+		if (Contains(point))
+		{
+			return 0.0f;
+		}
+		else
+		{
+			Vector2<T> maxDist(0.0f);
+			
+			if (point.x < mMin.x)
+				maxDist.x = mMin.x - point.x;
+			else if (point.x > mMax.x)
+				maxDist.x = x - mMax.x;
+
+			if (point.y < mMin.y)
+				maxDist.y = mMin.y - point.y;
+			else if (point.y > mMax.y)
+				maxDist.y = point.y - mMax.y;
+
+			return maxDist.GetSquaredLength();
+		}
+	}	
+	inline T GetDistance(const Vector2<T>& point) const
+	{
+		return Math::FastSqrt(GetSquaredDistance(point));
+	}
+
+	constexpr bool Contains(T x, T y) const
+	{
+		return Math::InRange(x, mMin.x, mMax.x) && Math::InRange(y, mMin.y, mMax.y);
+	}
+	constexpr bool Contains(const Vector2<T>& point) const
+	{
+		return Math::InRange(point.x, mMin.x, mMax.x) && Math::InRange(point.y, mMin.y, mMax.y);
+	}
+	constexpr bool Contains(const Rect<T>& rect) const
+	{
+		return mMin.x <= rect.mMin.x
+			&& mMin.y <= rect.mMin.y
+			&& mMax.x >= rect.mMax.x
+			&& mMax.y >= rect.mMax.y;
+	}
+
+	constexpr bool Intersects(const Rect<T>& rect, Rect<T>* intersection = nullptr) const
+	{
+		T left = Math::Max(mMin.x, rect.mMin.x);
+		T right = Math::Min(mMax.x, rect.mMax.x);
+		if (left >= right)
+			return false;
+
+		T top = Math::Max(mMin.y, rect.mMin.y);
+		T bottom = Math::Min(mMax.y, rect.mMax.y);
+		if (top >= bottom)
+			return false;
+
+		if (intersection != nullptr)
+		{
+			intersection->mMin.Set(left, top);
+			intersection->mMax.Set(right, bottom);
+		}
+
+		return true;
+	}
+
+	constexpr bool operator==(const Rect<T>& other) const { return mMin == other.mMin && mMax == other.mMax; }
+	constexpr bool operator!=(const Rect<T>& other) const { return !operator==(other); }
+
+private:
+	Vector2<T> mMin;
+	Vector2<T> mMax;
+};
+
+using Rectf = Rect<F32>;
+using Recti = Rect<I32>;
+using Rectu = Rect<U32>;
+
+} // namespace NAMESPACE_NAME

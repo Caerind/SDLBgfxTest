@@ -21,8 +21,7 @@ public:
 	bool HasVertexModule() const;
 	bool HasFragmentModule() const;
 
-	// TODO : Remove/Clean if possible
-	bgfx::ProgramHandle GetHandle() const { return mShaderProgram; }
+	void Submit(bgfx::ViewId viewId);
 
 private:
 	bgfx::ShaderHandle CreateModule(const char* filename);

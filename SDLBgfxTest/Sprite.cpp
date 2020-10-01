@@ -75,15 +75,13 @@ void Sprite::Render(const bgfx::ViewId& viewId) const
 		// Specific to this sprite
 		bgfx::setVertexBuffer(viewId, mBuffer);
 		bgfx::setTexture(0, kUniformTexture, mTexture->GetHandle());
-		bgfx::submit(viewId, kShader.GetHandle());
+		kShader.Submit(viewId);
 	}
 }
 
 void Sprite::Update()
 {
 	const Rectf localBounds = GetLocalBounds();
-	const F32 localBoundsRight = localBounds.left + localBounds.width;
-	const F32 localBoundsBottom = localBounds.top + localBounds.height;
 
 	// TODO : Find how to handle texture errors here
 	assert(mTexture != nullptr);
@@ -91,18 +89,18 @@ void Sprite::Update()
 	const F32 oneOverTexWidth = 1.0f / static_cast<F32>(mTexture->GetWidth());
 	assert(mTexture->GetHeight() > 0);
 	const F32 oneOverTexHeight = 1.0f / static_cast<F32>(mTexture->GetHeight());
-	const F32 left = static_cast<F32>(mTextureRect.left) * oneOverTexWidth;
-	const F32 right = static_cast<F32>(mTextureRect.left + mTextureRect.width) * oneOverTexWidth;
-	const F32 top = static_cast<F32>(mTextureRect.top) * oneOverTexHeight;
-	const F32 bottom = static_cast<F32>(mTextureRect.top + mTextureRect.height) * oneOverTexHeight;
+	const F32 left = static_cast<F32>(mTextureRect.Left()) * oneOverTexWidth;
+	const F32 right = static_cast<F32>(mTextureRect.Right()) * oneOverTexWidth;
+	const F32 top = static_cast<F32>(mTextureRect.Top()) * oneOverTexHeight;
+	const F32 bottom = static_cast<F32>(mTextureRect.Bottom()) * oneOverTexHeight;
 
-	mVertices[0].pos = Vector2f(localBounds.left, localBounds.top);
+	mVertices[0].pos = localBounds.GetCorner(0);
 	mVertices[0].texCoords = Vector2f(left, top);
-	mVertices[1].pos = Vector2f(localBoundsRight, localBounds.top);
+	mVertices[1].pos = localBounds.GetCorner(1);
 	mVertices[1].texCoords = Vector2f(right, top);
-	mVertices[2].pos = Vector2f(localBoundsRight, localBoundsBottom);
+	mVertices[2].pos = localBounds.GetCorner(2);
 	mVertices[2].texCoords = Vector2f(right, bottom);
-	mVertices[3].pos = Vector2f(localBounds.left, localBoundsBottom);
+	mVertices[3].pos = localBounds.GetCorner(3);
 	mVertices[3].texCoords = Vector2f(left, bottom);
 
 	// TODO : Use dynamic vertex buffer instead ?

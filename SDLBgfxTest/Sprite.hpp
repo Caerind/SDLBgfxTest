@@ -6,6 +6,7 @@
 
 #include "Shader.hpp"
 #include "Texture.hpp"
+#include "Math/Rect.hpp"
 
 namespace NAMESPACE_NAME
 {
