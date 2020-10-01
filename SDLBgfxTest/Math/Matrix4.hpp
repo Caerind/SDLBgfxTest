@@ -3,8 +3,19 @@
 #include "../EngineIntegration.hpp"
 
 #include "Vector4.hpp"
+#include "Matrix3.hpp"
 
-/*
+// 
+// Matrix layout :    
+// 
+// 0  1  2  3      a11 a12 a13 a14
+// 4  5  6  7   =  a21 a22 a23 a24
+// 8  9  10 11     a31 a32 a33 a34
+// 12 13 14 15     a41 a42 a43 a44
+//
+
+// TODO : Constexpr memset, memcpy, swap, LookAt
+
 namespace NAMESPACE_NAME
 {
 
@@ -16,12 +27,12 @@ public:
 	static constexpr I32 Columns { 4 };
 	static constexpr I32 Elements { Rows * Columns };
 
-	constexpr Matrix4() { Set(Identity()); }
-	constexpr Matrix4(const Matrix4<T>& m) { Set(m); }
+	constexpr Matrix4() : data{ T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1) } {}
+	constexpr Matrix4(const Matrix4<T>& m) : data{ m.data[0], m.data[1], m.data[2], m.data[3], m.data[4], m.data[5], m.data[6], m.data[7], m.data[8], m.data[9], m.data[10], m.data[11], m.data[12], m.data[13], m.data[14], m.data[15] } {}
 	template <typename U>
-	constexpr Matrix4(const Matrix4<U>& m) { Set(m); }
-	constexpr Matrix4(const T* a) { Set(a); }
-	constexpr Matrix4(const T& a11, const T& a12, const T& a13, const T& a14, const T& a21, const T& a22, const T& a23, const T& a24, const T& a31, const T& a32, const T& a33, const T& a34, const T& a41, const T& a42, const T& a43, const T& a44) { Set(a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44); }
+	constexpr Matrix4(const Matrix4<U>& m) : data{ static_cast<T>(m.data[0]), static_cast<T>(m.data[1]), static_cast<T>(m.data[2]), static_cast<T>(m.data[3]), static_cast<T>(m.data[4]), static_cast<T>(m.data[5]), static_cast<T>(m.data[6]), static_cast<T>(m.data[7]), static_cast<T>(m.data[8]), static_cast<T>(m.data[9]), static_cast<T>(m.data[10]), static_cast<T>(m.data[11]), static_cast<T>(m.data[12]), static_cast<T>(m.data[13]), static_cast<T>(m.data[14]), static_cast<T>(m.data[15]) } {}
+	constexpr Matrix4(const T* a) : data{ a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11], a[12], a[13], a[14], a[15] } {}
+	constexpr Matrix4(const T& a11, const T& a12, const T& a13, const T& a14, const T& a21, const T& a22, const T& a23, const T& a24, const T& a31, const T& a32, const T& a33, const T& a34, const T& a41, const T& a42, const T& a43, const T& a44) : data{ a11, a12, a13, a14, a21, a22, a23, a24, a31, a32, a33, a34, a41, a42, a43, a44 } {}
 	~Matrix4() = default;
 
 	constexpr Matrix4<T>& Set(const Matrix4<T>& m)
@@ -257,11 +268,11 @@ public:
 
 		// Compute det2x2
 		const T m22m33 = data[5] * data[10] - data[6] * data[9];
-		const T m21m33 = data[1] * data[10] - data[2] * data[6];
-		const T m21m32 = data[1] * data[9] - data[2] * data[5];
+		const T m21m33 = data[4] * data[10] - data[8] * data[6];
+		const T m21m32 = data[4] * data[9] - data[8] * data[5];
 
 		// Compute det3x3
-		const T m11m33 = data[0] * m22m33 - data[4] * m21m33 + data[8] * m21m32;
+		const T m11m33 = data[0] * m22m33 - data[1] * m21m33 + data[2] * m21m32;
 		if (IsAffine())
 		{
 			// If affine, the last row is full of zero except the last one
@@ -270,6 +281,9 @@ public:
 		}
 		else
 		{
+			// TODO : Check this
+			
+			/*
 			// Compute det2x2, each det2x2 is used 2 times for the det3
 			const T m21m34 = data[1] * data[14] - data[2] * data[9];
 			const T m22m34 = data[5] * data[14] - data[6] * data[13];
@@ -282,6 +296,9 @@ public:
 
 			// Return the det of the 4x4
 			return data[3] * m12m34 - data[7] * m11m34 + data[11] * m11m34 - data[15] * m11m33; // 25 mul, 14 add
+			*/
+
+			return 0.0f;
 		}
 	}
 
@@ -318,10 +335,149 @@ public:
 	}
 	constexpr Matrix4<T> Transposed() const { return Matrix4<T>(data[0], data[4], data[8], data[12], data[1], data[5], data[9], data[13], data[2], data[6], data[10], data[14], data[3], data[7], data[11], data[15]); }
 
-	inline Matrix4<T>& fromMatrix3(const Matrix3<T>& matrix);
-	inline void toMatrix3(Matrix3<T>& matrix) const;
-	inline Matrix3<T> toMatrix3() const;
 
+	/*
+	constexpr Matrix4<T> operator*(const Matrix3<T>& m) const
+	{
+		Matrix4<T> out;
+		const Vector3<T> r0(GetRow(0).xyz());
+		const Vector3<T> r1(GetRow(1).xyz());
+		const Vector3<T> r2(GetRow(2).xyz());
+		const Vector3<T> r3(GetRow(3).xyz());
+		const Vector3<T> c0(m.GetColumn(0));
+		const Vector3<T> c1(m.GetColumn(1));
+		const Vector3<T> c2(m.GetColumn(2));
+		out.data[0] = c0.DotProduct(r0);
+		out.data[1] = c1.DotProduct(r0);
+		out.data[2] = c2.DotProduct(r0);
+		out.data[3] = data[3];
+		out.data[4] = c0.DotProduct(r1);
+		out.data[5] = c1.DotProduct(r1);
+		out.data[6] = c2.DotProduct(r1);
+		out.data[7] = data[7];
+		out.data[8] = c0.DotProduct(r2);
+		out.data[9] = c1.DotProduct(r2);
+		out.data[10] = c2.DotProduct(r2);
+		out.data[11] = data[11];
+		out.data[12] = c0.DotProduct(r3);
+		out.data[13] = c1.DotProduct(r3);
+		out.data[14] = c2.DotProduct(r3);
+		out.data[15] = data[15];
+		return out;
+	}
+	constexpr Matrix4<T>& operator*=(const Matrix3<T>& m)
+	{
+		const Vector3<T> r0(GetRow(0).xyz());
+		const Vector3<T> r1(GetRow(1).xyz());
+		const Vector3<T> r2(GetRow(2).xyz());
+		const Vector3<T> r3(GetRow(3).xyz());
+		const Vector3<T> c0(m.GetColumn(0));
+		const Vector3<T> c1(m.GetColumn(1));
+		const Vector3<T> c2(m.GetColumn(2));
+		data[0] = c0.DotProduct(r0);
+		data[1] = c1.DotProduct(r0);
+		data[2] = c2.DotProduct(r0);
+		data[4] = c0.DotProduct(r1);
+		data[5] = c1.DotProduct(r1);
+		data[6] = c2.DotProduct(r1);
+		data[8] = c0.DotProduct(r2);
+		data[9] = c1.DotProduct(r2);
+		data[10] = c2.DotProduct(r2);
+		data[12] = c0.DotProduct(r3);
+		data[13] = c1.DotProduct(r3);
+		data[14] = c2.DotProduct(r3);
+		return *this;
+	}
+	*/
+	
+	//constexpr Matrix4<T>& ApplyRotation(const Matrix3<T>& rotation);
+	constexpr Matrix4<T>& ApplyScale(const Vector3<T>& scale) { data[0] *= scale.x; data[1] *= scale.y; data[2] *= scale.z; data[4] *= scale.x; data[5] *= scale.y; data[6] *= scale.z; data[8] *= scale.x; data[9] *= scale.y; data[10] *= scale.z; data[12] *= scale.x; data[13] *= scale.y; data[14] *= scale.z; return *this; }
+	constexpr Matrix4<T>& ApplyScale(const T& sx, const T& sy, const T& sz) { data[0] *= sx; data[1] *= sy; data[2] *= sz; data[4] *= sx; data[5] *= sy; data[6] *= sz; data[8] *= sx; data[9] *= sy; data[10] *= sz; data[12] *= sx; data[13] *= sy; data[14] *= sz; return *this; }
+	constexpr Matrix4<T>& ApplyScale(const T& s) { data[0] *= s; data[1] *= s; data[2] *= s; data[4] *= s; data[5] *= s; data[6] *= s; data[8] *= s; data[9] *= s; data[10] *= s; data[12] *= s; data[13] *= s; data[14] *= s; return *this; }
+	constexpr Matrix4<T>& ApplyTranslation(const Vector3<T>& translation) { data[12] += translation.x; data[13] += translation.y; data[14] += translation.z; return *this; }
+	constexpr Matrix4<T>& ApplyTranslation(const T& tx, const T& ty, const T& tz) { data[12] += tx; data[13] += ty; data[14] += tz; return *this; }
+
+	static constexpr Matrix4<T> Rotation(const Matrix3<T>& m) { return Matrix4<T>(m[0], m[1], m[2], T(0), m[3], m[4], m[5], T(0), m[6], m[7], m[8], T(0), T(0), T(0), T(0), T(1)); }
+	static constexpr Matrix4<T> RotationX(const T& angle) { return RotationX(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
+	static constexpr Matrix4<T> RotationY(const T& angle) { return RotationY(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
+	static constexpr Matrix4<T> RotationZ(const T& angle) { return RotationZ(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
+	static constexpr Matrix4<T> RotationX(const Vector2<T>& v) { return Matrix4<T>(T(1), T(0), T(0), T(0), T(0), v.x, -v.y, T(0), T(0), v.y, v.x, T(0), T(0), T(0), T(0), T(1)); }
+	static constexpr Matrix4<T> RotationY(const Vector2<T>& v) { return Matrix4<T>(v.x, T(0), v.y, T(0), T(0), T(1), T(0), T(0), -v.y, T(0), v.x, T(0), T(0), T(0), T(0), T(1)); }
+	static constexpr Matrix4<T> RotationZ(const Vector2<T>& v) { return Matrix4<T>(v.x, -v.y, T(0), T(0), v.y, v.x, T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1)); }
+	static constexpr Matrix4<T> Scale(const Vector3<T>& scale) { return Matrix4<T>(scale.x, T(0), T(0), T(0), T(0), scale.y, T(0), T(0), T(0), T(0), scale.z, T(0), T(0), T(0), T(0), T(1)); }
+	static constexpr Matrix4<T> Scale(const T& sx, const T& sy, const T& sz) { return Matrix4<T>(sx, T(0), T(0), T(0), T(0), sy, T(0), T(0), T(0), T(0), sz, T(0), T(0), T(0), T(0), T(1)); }
+	static constexpr Matrix4<T> Scale(const T& s) { return Matrix4<T>(s, T(0), T(0), T(0), T(0), s, T(0), T(0), T(0), T(0), s, T(0), T(0), T(0), T(0), T(1)); }
+	static constexpr Matrix4<T> Translation(const Vector3<T>& translation) { return Matrix4<T>(T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1), T(0), translation.x, translation.y, translation.z, T(1)); }
+	static constexpr Matrix4<T> Translation(const T& tx, const T& ty, const T& tz) { return Matrix4<T>(T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1), T(0), tx, ty, tz, T(1)); }
+	
+	static constexpr Matrix4<T> Perspective(const T& fov, const T& aspect, const T& nearPlane, const T& farPlane, bool homogeneousNdc, Math::Handedness handedness)
+	{
+		const T tanHalfFov = Math::Tan(T(0.5) * fov);
+		const T invZDiff = T(1) / (farPlane - nearPlane);
+
+		const T _0 = T(1) / (aspect * tanHalfFov);
+		const T _5 = T(1) / tanHalfFov;
+		const T _11 = (handedness == Math::Handedness::Right ? T(-1) : T(1));
+		const T _10 = _11 * (homogeneousNdc ? farPlane + nearPlane : farPlane) * invZDiff;
+		const T _14 = -(homogeneousNdc ? T(2) * farPlane * nearPlane : farPlane * nearPlane) * invZDiff;
+
+		return Matrix4<T>(_0, T(0), T(0), T(0), T(0), _5, T(0), T(0), T(0), T(0), _10, _11, T(0), T(0), _14, T(0));
+	}
+
+	static constexpr Matrix4<T> Perspective(const T& fov, const T& width, const T& height, const T& nearPlane, const T& farPlane, bool homogeneousNdc, Math::Handedness handedness)
+	{
+		const T h = Math::Cos(T(0.5) * fov) / Math::Sin(T(0.5) * fov);
+		const T w = h * height / width;
+		const T invZDiff = T(1) / (farPlane - nearPlane);
+
+		const T _11 = (handedness == Math::Handedness::Right ? T(-1) : T(1));
+		const T _10 = _11 * (homogeneousNdc ? farPlane + nearPlane : farPlane) * invZDiff;
+		const T _14 = -(homogeneousNdc ? T(2) * farPlane * nearPlane : farPlane * nearPlane) * invZDiff;
+
+		return Matrix4<T>(w, T(0), T(0), T(0), T(0), h, T(0), T(0), T(0), T(0), _10, _11, T(0), T(0), _14, T(0));
+	}
+
+	static constexpr Matrix4<T> Orthographic(const T& left, const T& right, const T& top, const T& bottom, const T& nearPlane, const T& farPlane, bool homogeneousNdc, Math::Handedness handedness)
+	{
+		const T invWidth = T(1) / (right - left);
+		const T invHeight = T(1) / (top - bottom);
+		const T invZDiff = T(1) / (farPlane - nearPlane);
+
+		const T _10 = (homogeneousNdc ? T(2) : T(1)) * invZDiff;
+		const T _12 = -(right + left) * invWidth;
+		const T _13 = -(top + bottom) * invHeight;
+		const T _14 = -(homogeneousNdc ? -(nearPlane + farPlane) : nearPlane) * invZDiff;
+
+		return Matrix4<T>(T(2) * invWidth, T(0), T(0), T(0), T(0), T(2) * invHeight, T(0), T(0), T(0), T(0), handedness == Math::Handedness::Right ? -_10 : _10, T(0), _12, _13, _14, T(1));
+	}
+
+	static inline Matrix4<T> LookAt(const Vector3<T>& eye, const Vector3<T>& target, const Vector3<T>& up, Math::Handedness handedness)
+	{
+		const Vector3<T> f((target - eye).Normalized());
+		const Vector3<T> s(handedness == Math::Handedness::Right ? Vector3f::CrossProduct(f, up).Normalized() : Vector3f::CrossProduct(up, f).Normalized());
+		const Vector3<T> u(handedness == Math::Handedness::Right ? Vector3f::CrossProduct(s, f) : Vector3f::CrossProduct(f, s));
+		const T factor = (handedness == Math::Handedness::Right ? -1.0f : 1.0f);
+
+		return Matrix4<T>(s.x, u.x, factor * f.x, T(0), s.y, u.y, factor * f.y, T(0), s.z, u.z, factor * f.z, T(0), -s.DotProduct(eye), -u.DotProduct(eye), -factor * f.DotProduct(eye), T(1));
+	}
+
+	static constexpr Matrix4<T> Zero() { return Matrix4<T>(T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0)); }
+	static constexpr Matrix4<T> Identity() { return Matrix4<T>(T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1)); }
+
+	constexpr T* GetData() { return data; }
+	constexpr const T* GetData() const { return data; }
+
+private:
+	T data[16];
+};
+
+
+
+
+
+
+
+	/*
 	inline Quaternion<T> getRotation() const;
 	inline Vector3<T> getScale() const;
 	inline Vector3<T> getTranslation() const;
@@ -355,11 +511,6 @@ public:
 
 	static inline Matrix4<T> rotation(const Quaternion<T>& rotation);
 	static inline Matrix4<T> rotation(const Matrix3<T>& rotation);
-	static constexpr Matrix4<T> Scale(const Vector3<T>& scale) { return Matrix4<T>(scale.x, T(0), T(0), T(0), T(0), scale.y, T(0), T(0), T(0), T(0), scale.z, T(0), T(0), T(0), T(0), T(1)); }
-	static constexpr Matrix4<T> Scale(const T& sx, const T& sy, const T& sz) { return Matrix4<T>(sx, T(0), T(0), T(0), T(0), sy, T(0), T(0), T(0), T(0), sz, T(0), T(0), T(0), T(0), T(1)); }
-	static constexpr Matrix4<T> Scale(const T& s) { return Matrix4<T>(s, T(0), T(0), T(0), T(0), s, T(0), T(0), T(0), T(0), s, T(0), T(0), T(0), T(0), T(1)); }
-	static constexpr Matrix4<T> Translation(const Vector3<T>& translation) { return Matrix4<T>(T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1), T(0), translation.x, translation.y, translation.z, T(1)); }
-	static constexpr Matrix4<T> Translation(const T& tx, const T& ty, const T& tz) { return Matrix4<T>(T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1), T(0), tx, ty, tz, T(1)); }
 	static inline Matrix4<T> transform(const Vector3<T>& translation, const Quaternion<T>& rotation);
 	static inline Matrix4<T> transform(const Vector3<T>& translation, const Quaternion<T>& rotation, const Vector3<T>& scale);
 	static inline Matrix4<T> transform(const Vector3<T>& translation, const Quaternion<T>& rotation, const T& scale);
@@ -367,20 +518,9 @@ public:
 	static inline Matrix4<T> lookAt(const Vector3<T>& eye, const Vector3<T>& target, const Vector3<T>& up = Vector3<T>::up);
 	static inline Matrix4<T> ortho(const T& left, const T& right, const T& top, const T& bottom, const T& zNear, const T& zFar);
 	static inline Matrix4<T> perspective(const T& fov, const T& ratio, const T& zNear, const T& zFar);
+	*/
 
-	static constexpr Matrix4<T> Zero() { return Matrix4<T>(T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0)); }
-	static constexpr Matrix4<T> Identity() { return Matrix4<T>(T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1)); }
-
-	constexpr T* GetData() { return data; }
-	constexpr const T* GetData() const { return data; }
-
-private:
-	T data[16];
-};
-
-} // namespace en
-
-
+/*
 
 template<typename T>
 inline Matrix4<T>& Matrix4<T>::fromMatrix3(const Matrix3<T>& matrix)
@@ -816,60 +956,6 @@ inline Matrix4<T>& Matrix4<T>::makePerspective(const T& fov, const T& ratio, con
 }
 
 template<typename T>
-inline Matrix4<T>& Matrix4<T>::makeZero()
-{
-	return set(Matrix4<T>::zero);
-}
-
-template<typename T>
-inline Matrix4<T>& Matrix4<T>::makeIdentity()
-{
-	return set(Matrix4<T>::identity);
-}
-
-template<typename T>
-inline Matrix4<T> Matrix4<T>::rotation(const Quaternion<T>& rotation)
-{
-	return rotation.toMatrix4();
-}
-
-template<typename T>
-inline Matrix4<T> Matrix4<T>::rotation(const Matrix3<T>& rotation)
-{
-	return Matrix4<T>(rotation);
-}
-
-template<typename T>
-inline Matrix4<T> Matrix4<T>::scale(const Vector3<T>& scale)
-{
-	return Matrix4<T>(scale.x, T(0), T(0), T(0), T(0), scale.y, T(0), T(0), T(0), T(0), scale.z, T(0), T(0), T(0), T(0), T(1));
-}
-
-template<typename T>
-inline Matrix4<T> Matrix4<T>::scale(const T& sx, const T& sy, const T& sz)
-{
-	return Matrix4<T>(sx, T(0), T(0), T(0), T(0), sy, T(0), T(0), T(0), T(0), sz, T(0), T(0), T(0), T(0), T(1));
-}
-
-template<typename T>
-inline Matrix4<T> Matrix4<T>::scale(const T& s)
-{
-	return Matrix4<T>(s, T(0), T(0), T(0), T(0), s, T(0), T(0), T(0), T(0), s, T(0), T(0), T(0), T(0), T(1));
-}
-
-template<typename T>
-inline Matrix4<T> Matrix4<T>::translation(const Vector3<T>& translation)
-{
-	return Matrix4<T>(T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1), T(0), translation.x, translation.y, translation.z, T(1));
-}
-
-template<typename T>
-inline Matrix4<T> Matrix4<T>::translation(const T & tx, const T & ty, const T & tz)
-{
-	return Matrix4<T>(T(1), T(0), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(0), T(1), T(0), tx, ty, tz, T(1));
-}
-
-template<typename T>
 inline Matrix4<T> Matrix4<T>::transform(const Vector3<T>& translation, const Quaternion<T>& rotation)
 {
 	//enAssert(false); // Wrong, do not use
@@ -904,38 +990,10 @@ inline Matrix4<T> Matrix4<T>::viewMatrix(const Vector3<T>& translation, const Qu
 	Quaternion<T> invRot = rotation.conjugated();
 	return transform(-(invRot * translation), invRot);
 }
+*/
 
-template<typename T>
-inline Matrix4<T> Matrix4<T>::lookAt(const Vector3<T>& eye, const Vector3<T>& target, const Vector3<T>& up)
-{
-	const Vector3f f((target - eye).Normalized());
-	const Vector3f s(f.CrossProduct(up).Normalized());
-	const Vector3f u(s.CrossProduct(f));
-	return Matrix4<T>(s.x, u.x, -f.x, 0, s.y, u.y, -f.y, 0, s.z, u.z, -f.z, 0, -s.DotProduct(eye), -u.DotProduct(eye), f.DotProduct(eye), 1);
-}
+using Matrix4f = Matrix4<F32>;
 
-template<typename T>
-inline Matrix4<T> Matrix4<T>::ortho(const T& left, const T& right, const T& top, const T& bottom, const T& zNear, const T& zFar)
-{
-	const T width = right - left;
-	const T height = top - bottom;
-	const T zDist = zFar - zNear;
-	return Matrix4<T>(2 / width, 0, 0, 0, 0, 2 / height, 0, 0, 0, 0, 2 / zDist, 0, -(right + left) / width, -(top + bottom) / height, -(zFar + zNear) / zDist, 1);
-}
-
-template<typename T>
-inline Matrix4<T> Matrix4<T>::perspective(const T& fov, const T& ratio, const T& zNear, const T& zFar)
-{
-	//enAssert(ratio != 0.0f);
-	const T y = 1 / Math::Tan(fov * T(0.5));
-	const T x = y / ratio;
-	const T zDist = zFar - zNear;
-	return Matrix4<T>(x, 0, 0, 0, 0, y, 0, 0, 0, 0, -(zFar + zNear) / zDist, -1, 0, 0, (-2 * zFar * zNear) / zDist, 0);
-}
-
-typedef Matrix4<F32> Matrix4f;
-
-typedef Matrix4f mat4; // GLSL-like
+using mat4 = Matrix4f; // GLSL-like
 
 } // namespace NAMESPACE_NAME
-*/

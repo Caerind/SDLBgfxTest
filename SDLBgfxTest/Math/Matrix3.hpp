@@ -12,7 +12,8 @@
 // 6 7 8     a31 a32 a33
 //
 
-/*
+// TODO : Constexpr memcpy, swap
+
 namespace NAMESPACE_NAME
 {
 
@@ -20,16 +21,16 @@ template <typename T>
 class Matrix3
 {
 public:
-	static constexpr I32 Rows { 3 };
-	static constexpr I32 Columns { 3 };
-	static constexpr I32 Elements { Rows * Columns };
+	static constexpr I32 Rows{ 3 };
+	static constexpr I32 Columns{ 3 };
+	static constexpr I32 Elements{ Rows * Columns };
 
-	constexpr Matrix3() { Set(Identity()); }
-	constexpr Matrix3(const Matrix3<T>& m) { Set(m); }
+	constexpr Matrix3() : data{ T(1), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(1)} {}
+	constexpr Matrix3(const Matrix3<T>& m) : data{ m.data[0], m.data[1], m.data[2], m.data[3], m.data[4], m.data[5], m.data[6], m.data[7], m.data[8] } {}
 	template <typename U>
-	constexpr Matrix3(const Matrix3<U>& m) { Set(m); }
-	constexpr Matrix3(const T* a) { Set(a); }
-	constexpr Matrix3(const T& a11, const T& a12, const T& a13, const T& a21, const T& a22, const T& a23, const T& a31, const T& a32, const T& a33) { Set(a11, a12, a13, a21, a22, a23, a31, a32, a33); }
+	constexpr Matrix3(const Matrix3<U>& m) : data{ static_cast<T>(m.data[0]), static_cast<T>(m.data[1]), static_cast<T>(m.data[2]), static_cast<T>(m.data[3]), static_cast<T>(m.data[4]), static_cast<T>(m.data[5]), static_cast<T>(m.data[6]), static_cast<T>(m.data[7]), static_cast<T>(m.data[8]) } {}
+	constexpr Matrix3(const T* a) : data{ a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8] } {}
+	constexpr Matrix3(const T& a11, const T& a12, const T& a13, const T& a21, const T& a22, const T& a23, const T& a31, const T& a32, const T& a33) : data{ a11, a12, a13, a21, a22, a23, a31, a32, a33 } {}
 	~Matrix3() = default;
 
 	constexpr Matrix3<T>& Set(const Matrix3<T>& m)
@@ -188,12 +189,12 @@ public:
 
 	constexpr bool IsOrthonormal() const
 	{
-		return Math::Equals(T(1), data[0] + data[1] + data[2]) // Row0
-			&& Math::Equals(T(1), data[3] + data[4] + data[5]) // Row1
-			&& Math::Equals(T(1), data[6] + data[7] + data[8]) // Row2
-			&& Math::Equals(T(1), data[0] + data[3] + data[6]) // Column0
-			&& Math::Equals(T(1), data[1] + data[4] + data[7]) // Column1
-			&& Math::Equals(T(1), data[2] + data[5] + data[8]); // Column2
+		return Math::Equals(T(1), GetRow(0).GetSquaredLength())
+			&& Math::Equals(T(1), GetRow(1).GetSquaredLength())
+			&& Math::Equals(T(1), GetRow(2).GetSquaredLength())
+			&& Math::Equals(T(1), GetColumn(0).GetSquaredLength())
+			&& Math::Equals(T(1), GetColumn(1).GetSquaredLength())
+			&& Math::Equals(T(1), GetColumn(2).GetSquaredLength());
 	}
 
 	constexpr T GetTrace() const { return data[0] + data[4] + data[8]; }
@@ -205,7 +206,7 @@ public:
 		return data[0] * det11 - data[1] * det12 + data[2] * det13;
 	}
 
-	constexpr Matrix3<T>& Inverse(bool* succeeded = nullptr) // TODO : Check
+	constexpr Matrix3<T>& Inverse(bool* succeeded = nullptr)
 	{
 		const T det11 = data[4] * data[8] - data[5] * data[7];
 		const T det12 = data[3] * data[8] - data[5] * data[6];
@@ -292,7 +293,6 @@ public:
 	static constexpr Matrix3<T> RotationX(const T& angle) { return RotationX(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
 	static constexpr Matrix3<T> RotationY(const T& angle) { return RotationY(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
 	static constexpr Matrix3<T> RotationZ(const T& angle) { return RotationZ(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
-	// Use this if you already have computed the sine/cosine
 	static constexpr Matrix3<T> RotationX(const Vector2<T>& v) { return Matrix3<T>(T(1), T(0), T(0), T(0), v.x, -v.y, T(0), v.y, v.x); }
 	static constexpr Matrix3<T> RotationY(const Vector2<T>& v) { return Matrix3<T>(v.x, T(0), v.y, T(0), T(1), T(0), -v.y, T(0), v.x); }
 	static constexpr Matrix3<T> RotationZ(const Vector2<T>& v) { return Matrix3<T>(v.x, -v.y, T(0), v.y, v.x, T(0), T(0), T(0), T(1)); }
@@ -306,10 +306,9 @@ public:
 private:
 	T data[9];
 };
+ 
+using Matrix3f = Matrix3<F32>;
 
-typedef Matrix3<F32> Matrix3f;
-
-typedef Matrix3f mat3; // GLSL-like
+using mat3 = Matrix3f; // GLSL-like
 
 } // namespace NAMESPACE_NAME
-*/

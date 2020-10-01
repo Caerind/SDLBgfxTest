@@ -4,6 +4,8 @@
 
 #include "Math.hpp"
 
+// TODO : Constexpr Sqrt => GetLength, SetLength, Normalize, Normalized, SetPolarAngle
+
 namespace NAMESPACE_NAME
 {
 
@@ -69,8 +71,8 @@ public:
 	static constexpr T DotProduct(const Vector2<T>& v1, const Vector2<T>& v2) { return v1.x * v2.x + v1.y * v2.y; }
 
 	constexpr T GetSquaredLength() const { return DotProduct(*this); }
-	constexpr T GetLength() const { return Math::Sqrt(GetSquaredLength()); }
-	constexpr Vector2<T>& SetLength(const T& length, T* oldLength = nullptr)
+	inline T GetLength() const { return Math::FastSqrt(GetSquaredLength()); }
+	inline Vector2<T>& SetLength(const T& length, T* oldLength = nullptr)
 	{
 		const T currentLength = GetLength();
 		if (oldLength != nullptr)
@@ -83,11 +85,12 @@ public:
 		return *this;
 	}
 
-	constexpr Vector2<T>& Normalize(T* oldLength = nullptr) { return SetLength(T(1), oldLength); }
-	constexpr Vector2<T> Normalized(T* oldLength = nullptr) const { return Vector2<T>(*this).Normalize(oldLength); }
+	constexpr bool IsNormalized() const { return Math::Equals(GetSquaredLength(), T(1)); }
+	inline Vector2<T>& Normalize(T* oldLength = nullptr) { return SetLength(T(1), oldLength); }
+	inline Vector2<T> Normalized(T* oldLength = nullptr) const { return Vector2<T>(*this).Normalize(oldLength); }
 
-	constexpr T GetPolarAngle() const { Vector2<T> n = Normalized(); return Math::Atan2(n.x, n.y); }
-	constexpr Vector2<T>& SetPolarAngle(const T& angle)
+	constexpr T GetPolarAngle() const { return Math::Atan2(x, y); }
+	inline Vector2<T>& SetPolarAngle(const T& angle)
 	{
 		const T length = GetLength();
 		x = Math::Cos(angle) * length;

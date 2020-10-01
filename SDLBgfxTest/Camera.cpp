@@ -1,7 +1,5 @@
 #include "Camera.hpp"
 
-#include <bx/math.h>
-
 namespace NAMESPACE_NAME
 {
 
@@ -12,7 +10,7 @@ Camera::Camera()
 
 void Camera::Apply(bgfx::ViewId viewId) const
 {
-	bgfx::setViewTransform(viewId, GetViewMatrix(), GetProjectionMatrix());
+	bgfx::setViewTransform(viewId, GetViewMatrix().GetData(), GetProjectionMatrix().GetData());
 }
 
 void Camera::SetProjection(ProjectionMode projection)
@@ -176,7 +174,7 @@ F32 Camera::GetBottom() const
 	return orthographic.bottom;
 }
 
-const F32* Camera::GetProjectionMatrix() const
+const Matrix4f& Camera::GetProjectionMatrix() const
 {
 	if (mProjectionDirty)
 	{
@@ -185,48 +183,19 @@ const F32* Camera::GetProjectionMatrix() const
 	return mProjectionMatrix;
 }
 
-void Camera::InitializeView(const Vector3f& pos, const Vector3f& at, const Vector3f& up)
+void Camera::InitializeView(const Vector3f& pos, const Vector3f& at)
 {
 	mPosition = pos;
-	mLookAt = at;
-	mUpVector = up;
+	LookAt(at);
+}
+
+void Camera::LookAt(const Vector3f& at)
+{
+	mDirection = (at - mPosition).Normalized();
 	mViewDirty = true;
 }
 
-void Camera::SetPosition(const Vector3f& pos)
-{
-	mPosition = pos;
-	mViewDirty = true;
-}
-
-const Vector3f& Camera::GetPosition() const
-{
-	return mPosition;
-}
-
-void Camera::SetLookAt(const Vector3f& at)
-{
-	mLookAt = at;
-	mViewDirty = true;
-}
-
-const Vector3f& Camera::GetLookAt() const
-{
-	return mLookAt;
-}
-
-void Camera::SetUpVector(const Vector3f& up)
-{
-	mUpVector = up;
-	mViewDirty = true;
-}
-
-const Vector3f& Camera::GetUpVector() const
-{
-	return mUpVector;
-}
-
-const F32* Camera::GetViewMatrix() const
+const Matrix4f& Camera::GetViewMatrix() const
 {
 	if (mViewDirty)
 	{
@@ -235,34 +204,59 @@ const F32* Camera::GetViewMatrix() const
 	return mViewMatrix;
 }
 
+void Camera::SetPosition(const Vector3f& position)
+{
+	mPosition = position;
+	mViewDirty = true;
+}
+
+const Vector3f& Camera::GetPosition() const
+{
+	return mPosition;
+}
+
 void Camera::Move(const Vector3f& movement)
 {
 	mPosition += movement;
-	mLookAt += movement;
 	mViewDirty = true;
+}
+
+void Camera::SetDirection(const Vector3f& direction)
+{
+	// TODO : New function in Vector classes ?
+	if (direction.IsNormalized())
+	{
+		mDirection = direction;
+	}
+	else
+	{
+		mDirection = direction.Normalized();
+	}
+	mViewDirty = true;
+}
+
+const Vector3f& Camera::GetDirection() const
+{
+	return mDirection;
 }
 
 void Camera::UpdateProjectionMatrix() const
 {
-	static constexpr bool homogenousDepth = true; // bgfx::getCaps()->homogeneousDepth
+	const bool homogenousDepth = true;// bgfx::getCaps()->homogeneousDepth;
 	if (mProjectionMode == ProjectionMode::Perspective)
 	{
-		bx::mtxProj(mProjectionMatrix, perspective.fov, perspective.ratio, perspective.nearPlane, perspective.farPlane, homogenousDepth, bx::Handness::Right);
+		mProjectionMatrix = Matrix4f::Perspective(perspective.fov, perspective.ratio, perspective.nearPlane, perspective.farPlane, homogenousDepth, ENGINE_DEFAULT_HANDEDNESS);
 	}
 	else
 	{
-		static constexpr F32 offset = 0.0f;
-		bx::mtxOrtho(mProjectionMatrix, orthographic.left, orthographic.right, orthographic.bottom, orthographic.top, orthographic.nearPlane, orthographic.farPlane, offset, homogenousDepth, bx::Handness::Right);
+		mProjectionMatrix = Matrix4f::Orthographic(orthographic.left, orthographic.right, orthographic.bottom, orthographic.top, orthographic.nearPlane, orthographic.farPlane, homogenousDepth, ENGINE_DEFAULT_HANDEDNESS);
 	}
 	mProjectionDirty = false;
 }
 
 void Camera::UpdateViewMatrix() const
 {
-	const bx::Vec3 eye(mPosition.x, mPosition.y, mPosition.z);
-	const bx::Vec3 at(mLookAt.x, mLookAt.y, mLookAt.z);
-	const bx::Vec3 up(0.0f, 1.0f, 0.0f);
-	bx::mtxLookAt(mViewMatrix, eye, at, up, bx::Handness::Right);
+	mViewMatrix = Matrix4f::LookAt(mPosition, mPosition + mDirection, ENGINE_DEFAULT_UP, ENGINE_DEFAULT_HANDEDNESS);
 	mViewDirty = false;
 }
 

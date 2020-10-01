@@ -2,6 +2,11 @@
 
 #include "../EngineIntegration.hpp"
 
+// TODO : Constexpr Sqrt => InvSqrt, Asin, Acos
+
+#define ENGINE_DEFAULT_HANDEDNESS Math::Handedness::Right
+#define ENGINE_DEFAULT_UP Vector3f::UnitY()
+
 namespace NAMESPACE_NAME
 {
 
@@ -9,6 +14,8 @@ class Math
 {
 public:
 	Math() = delete;
+
+	enum class Handedness { Right, Left };
 
 	static constexpr F32 Epsilon { 0.0001f };
 	static constexpr F32 Pi { 3.141592653589793238462643383f };
@@ -21,7 +28,7 @@ public:
 
 	template <typename T>
 	static constexpr T Sqr(T value) { return value * value; }
-	static constexpr F32 Sqrt(F32 value)
+	static inline F32 FastSqrt(F32 value)
 	{
 		I32 i = *(I32*)&value;
 		i = (1 << 29) + (i >> 1) - (1 << 22);
@@ -30,10 +37,10 @@ public:
 		f = 0.25f * f + value / f;
 		return f;
 	}
-	static constexpr F32 InvSqrt(F32 value)
+	static inline F32 FastInvSqrt(F32 value)
 	{
 		// TODO : This may be improved
-		return 1.0f / Sqrt(value);
+		return 1.0f / FastSqrt(value);
 	}
 
 	static constexpr F32 DegToRad(F32 value) { return value * kDegToRad; }
@@ -115,7 +122,7 @@ public:
 		return Sin(value) / Cos(value);
 	}
 
-	static constexpr F32 Asin(F32 value)
+	static inline F32 Asin(F32 value)
 	{
 		const F32 sign = (value >= 0.0f) ? 1.0f : -1.0f;
 		value = sign * value;
@@ -129,11 +136,11 @@ public:
 		const F32 x5 = x4 * value;
 		const F32 x6 = x5 * value;
 		const F32 x7 = x6 * value;
-		const F32 sqrRoot = Sqrt(1.0f - value);
+		const F32 sqrRoot = FastSqrt(1.0f - value);
 		const F32 firstPart = sqrRoot * (1.5707963050f - 0.2145988016f * value + 0.0889789874f * x2 - 0.0501743046f * x3 + 0.0308918810f * x4 - 0.01708812556f * x5 + 0.0066700901f * x6 - 0.0012624911f * x7);
 		return sign * (HalfPi - firstPart) * kRadToDeg;
 	}
-	static constexpr F32 Acos(F32 value) 
+	static inline F32 Acos(F32 value) 
 	{ 
 		return 90.0f - Asin(value);
 	}

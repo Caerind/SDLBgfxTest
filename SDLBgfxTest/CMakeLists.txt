@@ -1,8 +1,4 @@
-add_executable(SDLBGFXTest
-	shaders/sprite.vs
-	shaders/sprite.fs
-	shaders/varying.def.sc
-	EngineIntegration.hpp
+set(SRC_MATH
 	Math/Math.hpp
 	Math/Vector2.hpp
 	Math/Vector3.hpp
@@ -10,6 +6,12 @@ add_executable(SDLBGFXTest
 	Math/Matrix3.hpp
 	Math/Matrix4.hpp
 	Math/Quaternion.hpp
+)
+source_group("Math" FILES ${SRC_MATH})
+
+add_executable(SDLBGFXTest
+	EngineIntegration.hpp
+	${SRC_MATH}
 	SDLWrapper.hpp 
 	SDLWrapper.cpp 
 	Window.hpp 
@@ -30,5 +32,8 @@ add_executable(SDLBGFXTest
 	Keyboard.cpp
 	Camera.hpp
 	Camera.cpp
+	shaders/sprite.vs
+	shaders/sprite.fs
+	shaders/varying.def.sc
 	main.cpp)
 target_link_libraries(SDLBGFXTest PUBLIC SDL2 SDL2main bgfx dear-imgui)

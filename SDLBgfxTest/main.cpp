@@ -1,6 +1,5 @@
 #include "EngineIntegration.hpp"
 
-#include <bx/math.h>
 #include <bx/timer.h>
 
 #include "SDLWrapper.hpp"
@@ -13,12 +12,26 @@
 #include "Mouse.hpp"
 #include "Keyboard.hpp"
 #include "Camera.hpp"
+#include "Math/Matrix3.hpp"
+#include "Math/Matrix4.hpp"
 
 using namespace NAMESPACE_NAME;
 
 bool app(Window& window);
 
-void CameraUpdate(Camera& camera, F32 deltaTime);
+void CameraUpdateTotalWar(Camera& camera, F32 deltaTime);
+void CameraUpdateOldFps(Camera& camera, F32 deltaTime);
+void CameraUpdateNewFps(Camera& camera, F32 deltaTime);
+
+void printMtx3(const Matrix3f& m)
+{
+	printf("%f %f %f\n%f %f %f\n%f %f %f", m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
+}
+
+void printMtx4(const Matrix4f& m)
+{
+	printf("%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n", m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13], m[14], m[15]);
+}
 
 int main(int argc, char** argv)
 {
@@ -87,22 +100,19 @@ bool app(Window& window)
 
 	Sprite spriteA;
 	spriteA.SetTexture(textureA);
+	Sprite spriteA2;
+	spriteA2.SetTexture(textureA);
+	Matrix4f spriteATransform = Matrix4f::Translation(1.0f, 1.0f, 0.0f);
 
 	Sprite spriteB;
 	spriteB.SetTexture(textureB);
-	F32 spriteBTransform[16];
-	bx::mtxTranslate(spriteBTransform, 2.0f, 2.0f, 0.0f);
+	Matrix4f spriteBTransform = Matrix4f::Translation(2.0f, 2.0f, 0.0f);
+
+	bool cameraOldFps = false;
 
 	Camera camera;
-	{
-		// Projection
-		camera.InitializePerspective(60.0f, F32(window.GetWidth()) / F32(window.GetHeight()), 0.1f, 100.0f);
-
-		// View
-		camera.SetPosition(Vector3f(0.0f, 0.0f, 5.0f));
-		camera.SetLookAt(Vector3f(0.0f, 0.0f, 0.0f));
-		camera.SetUpVector(Vector3f(0.0f, 1.0f, 0.0f));
-	}
+	camera.InitializePerspective(80.0f, F32(window.GetWidth()) / F32(window.GetHeight()), 0.1f, 100.0f);
+	camera.InitializeView(Vector3f(0.0f, 1.0f, 5.0f), Vector3f(0.0f, 0.0f, 0.0f));
 
 	I64 lastTime = bx::getHPCounter();
 	const double frequency = double(bx::getHPFrequency());
@@ -157,7 +167,10 @@ bool app(Window& window)
 		// ImGui
 #ifdef ENGINE_IMGUI
 		ImGuiWrapper::BeginFrame(imguiViewId);
-		ImGui::ShowDemoWindow();
+		ImGui::Begin("CameraControls");
+		ImGui::Checkbox("Use debug camera", &cameraOldFps);
+		ImGui::End();
+		//ImGui::ShowDemoWindow();
 		ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
 
@@ -167,14 +180,16 @@ bool app(Window& window)
 		lastTime = now;
 		const F32 dt = F32(frameTime / frequency);
 
-		F32 rot[16];
-		bx::mtxRotateY(rot, 3.14152f * dt);
-		F32 copy[16];
-		for (U32 i = 0; i < 16; ++i)
-			copy[i] = spriteBTransform[i];
-		bx::mtxMul(spriteBTransform, copy, rot);
+		spriteBTransform *= Matrix4f::RotationY(180.0f * dt);
 
-		CameraUpdate(camera, dt);
+		if (cameraOldFps)
+		{
+			CameraUpdateOldFps(camera, dt);
+		}
+		else
+		{
+			CameraUpdateNewFps(camera, dt);
+		}
 
 		// Toggle debug stats
 #ifdef ENGINE_DEBUG
@@ -199,7 +214,10 @@ bool app(Window& window)
 
 			spriteA.Render(BgfxWrapper::kClearView);
 
-			bgfx::setTransform(spriteBTransform);
+			bgfx::setTransform(spriteATransform.GetData());
+			spriteA2.Render(BgfxWrapper::kClearView);
+
+			bgfx::setTransform(spriteBTransform.GetData());
 			spriteB.Render(BgfxWrapper::kClearView);
 
 			bgfx::frame();
@@ -210,7 +228,7 @@ bool app(Window& window)
 }
 
 // Inspired by TotalWar controls
-void CameraUpdate(Camera& camera, F32 deltaTime)
+void CameraUpdateTotalWar(Camera& camera, F32 deltaTime)
 {
 	Vector3f movement;
 	bool moved = false;
@@ -251,5 +269,87 @@ void CameraUpdate(Camera& camera, F32 deltaTime)
 	if (moved)
 	{
 		camera.Move(movement);
+	}
+}
+
+// Old fps, right/left to yaw
+void CameraUpdateOldFps(Camera& camera, F32 deltaTime)
+{
+	Vector3f direction = camera.GetDirection();
+
+	Vector3f movement;
+	bool moved = false;
+	if (Keyboard::IsHold(Keyboard::Key::Up))
+	{
+		movement += 2.0f * direction * deltaTime;
+		moved = true;
+	}
+	if (Keyboard::IsHold(Keyboard::Key::Down))
+	{
+		movement -= 2.0f * direction * deltaTime;
+		moved = true;
+	}
+	if (moved)
+	{
+		camera.Move(movement);
+	}
+	
+	bool rotated = false;
+	if (Keyboard::IsHold(Keyboard::Key::Right))
+	{
+		direction = Matrix3f::RotationY(90.0f * deltaTime).TransformDirection(direction);
+		rotated = true;
+	}
+	if (Keyboard::IsHold(Keyboard::Key::Left))
+	{
+		direction = Matrix3f::RotationY(-90.0f * deltaTime).TransformDirection(direction);
+		rotated = true;
+	}
+	if (rotated)
+	{
+		camera.SetDirection(direction);
+	}
+}
+
+// "New" fps, yaw & pitch via mouse
+void CameraUpdateNewFps(Camera& camera, F32 deltaTime)
+{
+	Vector3f direction = camera.GetDirection();
+
+	Vector3f movement;
+	bool moved = false;
+	if (Keyboard::IsHold(Keyboard::Key::W))
+	{
+		movement += 2.0f * direction * deltaTime;
+		moved = true;
+	}
+	if (Keyboard::IsHold(Keyboard::Key::S))
+	{
+		movement -= 2.0f * direction * deltaTime;
+		moved = true;
+	}
+	if (Keyboard::IsHold(Keyboard::Key::A))
+	{
+		movement -= 2.0f * direction.CrossProduct(Vector3f::UnitY()) * deltaTime;
+		moved = true;
+	}
+	if (Keyboard::IsHold(Keyboard::Key::D))
+	{
+		movement += 2.0f * direction.CrossProduct(Vector3f::UnitY()) * deltaTime;
+		moved = true;
+	}
+	if (moved)
+	{
+		camera.Move(movement);
+	}
+
+	bool rotated = false;
+
+	F32 yaw = static_cast<F32>(Mouse::GetDeltaPosition().x);
+	if (!Math::Equals(yaw, 0.0f))
+	{
+		yaw *= 20.0f * deltaTime;
+		direction = Matrix3f::RotationY(yaw).TransformDirection(direction);
+		rotated = true;
 	}
 }

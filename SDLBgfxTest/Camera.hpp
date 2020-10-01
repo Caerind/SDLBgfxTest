@@ -5,6 +5,7 @@
 #include <bgfx/bgfx.h>
 
 #include "Math/Vector3.hpp"
+#include "Math/Matrix4.hpp"
 
 namespace NAMESPACE_NAME
 {
@@ -35,42 +36,40 @@ public:
 	void SetFarPlane(F32 farPlane);
 	F32 GetFarPlane() const;
 
-    void SetFOV(F32 fov);
-    F32 GetFOV() const;
+	void SetFOV(F32 fov);
+	F32 GetFOV() const;
 
-    void SetRatio(F32 ratio);
-    F32 GetRatio() const;
+	void SetRatio(F32 ratio);
+	F32 GetRatio() const;
 
-    void SetLeft(F32 left);
-    F32 GetLeft() const;
+	void SetLeft(F32 left);
+	F32 GetLeft() const;
 
-    void SetTop(F32 top);
-    F32 GetTop() const;
+	void SetTop(F32 top);
+	F32 GetTop() const;
 
-    void SetRight(F32 right);
-    F32 GetRight() const;
+	void SetRight(F32 right);
+	F32 GetRight() const;
 
-    void SetBottom(F32 bottom);
-    F32 GetBottom() const;
+	void SetBottom(F32 bottom);
+	F32 GetBottom() const;
 
-    const F32* GetProjectionMatrix() const;
+    const Matrix4f& GetProjectionMatrix() const;
 
     // View
 
-    void InitializeView(const Vector3f& pos, const Vector3f& at, const Vector3f& up);
+    void InitializeView(const Vector3f& pos, const Vector3f& at);
 
-    void SetPosition(const Vector3f& pos);
-    const Vector3f& GetPosition() const;
-
-    void SetLookAt(const Vector3f& at);
-    const Vector3f& GetLookAt() const;
-
-    void SetUpVector(const Vector3f& up);
-    const Vector3f& GetUpVector() const;
+	void LookAt(const Vector3f& at);
     
-    const F32* GetViewMatrix() const;
+    const Matrix4f& GetViewMatrix() const;
 
-    void Move(const Vector3f& movement);
+	void SetPosition(const Vector3f& position);
+	const Vector3f& GetPosition() const;
+	void Move(const Vector3f& movement);
+
+	void SetDirection(const Vector3f& direction);
+	const Vector3f& GetDirection() const;
 
 private:
     void UpdateProjectionMatrix() const;
@@ -95,21 +94,17 @@ private:
 		F32 bottom;
 	};
 
-	// TODO : Reorder elements
-
-	mutable F32 mProjectionMatrix[16];
+	mutable Matrix4f mViewMatrix;
+    mutable Matrix4f mProjectionMatrix;
+	Vector3f mPosition;
+	Vector3f mDirection;
 	union
 	{
 		PerspectiveData perspective;
 		OrthographicData orthographic;
 	};
-    ProjectionMode mProjectionMode;
+	ProjectionMode mProjectionMode;
 	mutable bool mProjectionDirty;
-
-    mutable F32 mViewMatrix[16];
-    Vector3f mPosition;
-    Vector3f mLookAt;
-	Vector3f mUpVector;
 	mutable bool mViewDirty;
 };
 
