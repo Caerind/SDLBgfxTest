@@ -71,7 +71,7 @@ public:
 			if (point.x < mMin.x)
 				maxDist.x = mMin.x - point.x;
 			else if (point.x > mMax.x)
-				maxDist.x = x - mMax.x;
+				maxDist.x = point.x - mMax.x;
 
 			if (point.y < mMin.y)
 				maxDist.y = mMin.y - point.y;

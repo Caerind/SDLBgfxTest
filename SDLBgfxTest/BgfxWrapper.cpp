@@ -124,21 +124,10 @@ bool BgfxWrapper::Init(Window& window)
         return false;
     }
     }
-
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-    pd.ndt = wmi.info.x11.display;
-    pd.nwh = (void*)(uintptr_t)wmi.info.x11.window;
-#elif BX_PLATFORM_OSX
-    pd.ndt = NULL;
-    pd.nwh = wmi.info.cocoa.window;
-#elif BX_PLATFORM_WINDOWS
-#elif BX_PLATFORM_STEAMLINK
-    pd.ndt = wmi.info.vivante.display;
-    pd.nwh = wmi.info.vivante.window;
-#endif // BX_PLATFORM_
-    pd.context = NULL;
-    pd.backBuffer = NULL;
-    pd.backBufferDS = NULL;
+	
+    pd.context = nullptr;
+    pd.backBuffer = nullptr;
+    pd.backBufferDS = nullptr;
     bgfx::setPlatformData(pd);
 
 	// Call bgfx::renderFrame before bgfx::init to signal to bgfx not to create a render thread.
