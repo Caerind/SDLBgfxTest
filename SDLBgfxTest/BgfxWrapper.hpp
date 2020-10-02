@@ -8,12 +8,13 @@
 
 namespace NAMESPACE_NAME
 {
-
 class BgfxWrapper
 {
 public:
-    static constexpr bgfx::ViewId kClearView = 0;
-    static constexpr U32 kClearColor = 0x443355FF;
+
+    
+static const bgfx::ViewId kClearView;
+static const U32 kClearColor;
 
     static bool Init(Window& window);
     static bool IsInitialized();

@@ -10,6 +10,9 @@
 namespace NAMESPACE_NAME
 {
 
+constexpr bgfx::ViewId BgfxWrapper::kClearView = 0;
+constexpr U32 BgfxWrapper::kClearColor = 0x443355FF;
+
 bool BgfxWrapper::Init(Window& window)
 {
     BgfxWrapper& bgfx = GetInstance();
