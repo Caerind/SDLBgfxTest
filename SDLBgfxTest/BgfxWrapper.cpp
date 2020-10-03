@@ -10,9 +10,6 @@
 namespace NAMESPACE_NAME
 {
 
-constexpr bgfx::ViewId BgfxWrapper::kClearView = 0;
-constexpr U32 BgfxWrapper::kClearColor = 0x443355FF;
-
 bool BgfxWrapper::Init(Window& window)
 {
     BgfxWrapper& bgfx = GetInstance();
@@ -150,6 +147,9 @@ bool BgfxWrapper::Init(Window& window)
 #ifdef ENGINE_DEBUG
     bgfx::setDebug(BGFX_DEBUG_TEXT);
 #endif // ENGINE_DEBUG
+
+	constexpr bgfx::ViewId kClearView = 0;
+	constexpr U32 kClearColor = 0x443355FF;
 
     bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, kClearColor, 1.0f, 0);
     bgfx::setViewRect(kClearView, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));
