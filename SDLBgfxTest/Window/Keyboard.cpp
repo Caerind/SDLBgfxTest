@@ -100,6 +100,11 @@ bool Keyboard::IsReleased(Key key)
 	return (GetInstance().mKeyStates[static_cast<U32>(key)] & released) > 0;
 }
 
+bool Keyboard::AreModifiersHold(U32 modifiers)
+{
+	return (GetInstance().mModifiers & modifiers) > 0;
+}
+
 bool Keyboard::IsAltHold()
 {
 	return (GetInstance().mModifiers & static_cast<U32>(Modifier::Alt)) > 0;

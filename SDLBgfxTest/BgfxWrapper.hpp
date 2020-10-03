@@ -4,18 +4,13 @@
 
 #include <bgfx/bgfx.h>
 
-#include "Window.hpp"
+#include "Window/Window.hpp"
 
 namespace NAMESPACE_NAME
 {
 class BgfxWrapper
 {
 public:
-
-    
-static const bgfx::ViewId kClearView;
-static const U32 kClearColor;
-
     static bool Init(Window& window);
     static bool IsInitialized();
     static bool Release();

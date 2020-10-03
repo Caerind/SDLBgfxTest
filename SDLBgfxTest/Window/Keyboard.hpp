@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EngineIntegration.hpp"
+#include "../EngineIntegration.hpp"
 
 #include <SDL.h>
 
@@ -130,6 +130,7 @@ public:
 	static bool IsPressed(Key key);
 	static bool IsReleased(Key key);
 
+	static bool AreModifiersHold(U32 modifiers);
 	static bool IsAltHold();
 	static bool IsControlHold();
 	static bool IsShiftHold();
@@ -160,9 +161,9 @@ private:
 	enum class KeyState
 	{
 		None = 0,
-		Hold = 1,
-		Pressed = 2,
-		Released = 4
+		Hold = 0x01,
+		Pressed = 0x02,
+		Released = 0x04
 	};
 	U8 mKeyStates[kKeyCount];
 	U32 mModifiers;

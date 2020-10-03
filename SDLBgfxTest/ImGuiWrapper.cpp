@@ -17,8 +17,8 @@
 #include "embedded_shaders/vs_imgui_image.bin.h"
 #include "embedded_shaders/fs_imgui_image.bin.h"
 
-#include "Mouse.hpp"
-#include "Keyboard.hpp"
+#include "Window/Mouse.hpp"
+#include "Window/Keyboard.hpp"
 
 namespace NAMESPACE_NAME
 {

@@ -10,6 +10,7 @@ void Mouse::Refresh()
 	Mouse& mouse = GetInstance();
 
 	int pX, pY;
+	mouse.mPreviousButtonMask = mouse.mButtonMask;
 	mouse.mButtonMask = SDL_GetMouseState(&pX, &pY);
 	const I32 x = static_cast<I32>(pX);
 	const I32 y = static_cast<I32>(pY);
@@ -27,6 +28,10 @@ void Mouse::HandleEvent(const SDL_Event& event)
 	if (event.type == SDL_MOUSEBUTTONDOWN)
 	{
 		mouse.mButtonMask |= event.button.button;
+	}
+	else if (event.type == SDL_MOUSEBUTTONUP)
+	{
+		mouse.mButtonMask &= ~(event.button.button);
 	}
 	else if (event.type == SDL_MOUSEWHEEL)
 	{
@@ -98,19 +103,48 @@ Window* Mouse::GetCurrentWindow()
 	}
 }
 
+bool Mouse::IsHold(Button button)
+{
+	Mouse& mouse = GetInstance();
+	switch (button)
+	{
+	case Button::Left: return (SDL_BUTTON_LMASK & mouse.mButtonMask) > 0; break;
+	case Button::Middle: return (SDL_BUTTON_MMASK & mouse.mButtonMask) > 0; break;
+	case Button::Right: return (SDL_BUTTON_RMASK & mouse.mButtonMask) > 0; break;
+	case Button::X1: return (SDL_BUTTON_X1MASK & mouse.mButtonMask) > 0; break;
+	case Button::X2: return (SDL_BUTTON_X2MASK & mouse.mButtonMask) > 0; break;
+	default: assert(false); break;
+	}
+	return false;
+}
+
 bool Mouse::IsPressed(Button button)
 {
 	Mouse& mouse = GetInstance();
 	switch (button)
 	{
-	case Button::Left: return (SDL_BUTTON_LEFT & mouse.mButtonMask) > 0; break;
-	case Button::Middle: return (SDL_BUTTON_MIDDLE & mouse.mButtonMask) > 0; break;
-	case Button::Right: return (SDL_BUTTON_RIGHT & mouse.mButtonMask) > 0; break;
-	case Button::X1: return (SDL_BUTTON_X1 & mouse.mButtonMask) > 0; break;
-	case Button::X2: return (SDL_BUTTON_X2 & mouse.mButtonMask) > 0; break;
+	case Button::Left: return (SDL_BUTTON_LMASK & mouse.mButtonMask) > 0 && (SDL_BUTTON_LMASK & mouse.mPreviousButtonMask) == 0; break;
+	case Button::Middle: return (SDL_BUTTON_MMASK & mouse.mButtonMask) > 0 && (SDL_BUTTON_MMASK & mouse.mPreviousButtonMask) == 0; break;
+	case Button::Right: return (SDL_BUTTON_RMASK & mouse.mButtonMask) > 0 && (SDL_BUTTON_RMASK & mouse.mPreviousButtonMask) == 0; break;
+	case Button::X1: return (SDL_BUTTON_X1MASK & mouse.mButtonMask) > 0 && (SDL_BUTTON_X1MASK & mouse.mPreviousButtonMask) == 0; break;
+	case Button::X2: return (SDL_BUTTON_X2MASK & mouse.mButtonMask) > 0 && (SDL_BUTTON_X2MASK & mouse.mPreviousButtonMask) == 0; break;
+	default: assert(false); break;
 	}
-	// Unhandled mouse button
-	assert(false);
+	return false;
+}
+
+bool Mouse::IsReleased(Button button)
+{
+	Mouse& mouse = GetInstance();
+	switch (button)
+	{
+	case Button::Left: return (SDL_BUTTON_LMASK & mouse.mButtonMask) == 0 && (SDL_BUTTON_LMASK & mouse.mPreviousButtonMask) > 0; break;
+	case Button::Middle: return (SDL_BUTTON_MMASK & mouse.mButtonMask) == 0 && (SDL_BUTTON_MMASK & mouse.mPreviousButtonMask) > 0; break;
+	case Button::Right: return (SDL_BUTTON_RMASK & mouse.mButtonMask) == 0 && (SDL_BUTTON_RMASK & mouse.mPreviousButtonMask) > 0; break;
+	case Button::X1: return (SDL_BUTTON_X1MASK & mouse.mButtonMask) == 0 && (SDL_BUTTON_X1MASK & mouse.mPreviousButtonMask) > 0; break;
+	case Button::X2: return (SDL_BUTTON_X2MASK & mouse.mButtonMask) == 0 && (SDL_BUTTON_X2MASK & mouse.mPreviousButtonMask) > 0; break;
+	default: assert(false); break;
+	}
 	return false;
 }
 
@@ -123,6 +157,7 @@ Mouse& Mouse::GetInstance()
 Mouse::Mouse()
 	: mPosition(0, 0)
 	, mDelta(0, 0)
+	, mPreviousButtonMask(0)
 	, mButtonMask(0)
 	, mWheel(0)
 	, mHorizontalWheel(0)

@@ -15,14 +15,24 @@ set(SRC_MATH
 	Math/Vector4.hpp
 )
 source_group("Math" FILES ${SRC_MATH})
+set(SRC_WINDOW
+	Window/SDLWrapper.hpp 
+	Window/SDLWrapper.cpp 
+	Window/Window.hpp 
+	Window/Window.cpp
+	Window/Mouse.hpp
+	Window/Mouse.cpp
+	Window/Keyboard.hpp
+	Window/Keyboard.cpp
+	Window/EventSystem.hpp
+	Window/EventSystem.cpp
+)
+source_group("Window" FILES ${SRC_WINDOW})
 
 add_executable(SDLBGFXTest
 	EngineIntegration.hpp
 	${SRC_MATH}
-	SDLWrapper.hpp 
-	SDLWrapper.cpp 
-	Window.hpp 
-	Window.cpp 
+	${SRC_WINDOW}
 	BgfxWrapper.hpp 
 	BgfxWrapper.cpp 
 	Shader.hpp 
@@ -33,12 +43,8 @@ add_executable(SDLBGFXTest
 	Sprite.cpp 
 	ImGuiWrapper.hpp 
 	ImGuiWrapper.cpp
-	Mouse.hpp
-	Mouse.cpp
 	Mesh.hpp
 	Mesh.cpp
-	Keyboard.hpp
-	Keyboard.cpp
 	Camera.hpp
 	Camera.cpp
 	shaders/sprite.vs

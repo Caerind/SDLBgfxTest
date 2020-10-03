@@ -26,25 +26,25 @@ matrix:
         - cmake ..
         - make
 
-  - name: "Linux clang"
-    os: linux
-    dist: bionic
-    compiler: clang
-    addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - clang
-            - cmake
-            - libgl1-mesa-dev
-            - x11proto-core-dev
-            - libx11-dev
-    script:
-        - export CXX="clang" CC="clang"
-        - mkdir build && cd build
-        - cmake ..
-        - make
+#  - name: "Linux clang"
+#    os: linux
+#    dist: bionic
+#    compiler: clang
+#    addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - clang
+#            - cmake
+#            - libgl1-mesa-dev
+#            - x11proto-core-dev
+#            - libx11-dev
+#    script:
+#        - export CXX="clang" CC="clang"
+#        - mkdir build && cd build
+#        - cmake ..
+#        - make
 
   - name: "macOS Xcode 12"
     os: osx

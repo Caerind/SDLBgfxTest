@@ -110,6 +110,10 @@ bgfx::ShaderHandle Shader::CreateModule(const char* filename)
 	case bgfx::RendererType::Vulkan:
 		shaderPath = "shaders/spirv/";
 		break;
+	// TODO : Add missing cases
+	default: 
+		assert(false);
+		break;
 	}
 
 	std::size_t shaderLen = strlen(shaderPath);

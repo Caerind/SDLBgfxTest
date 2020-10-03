@@ -13,6 +13,19 @@ void Camera::Apply(bgfx::ViewId viewId) const
 	bgfx::setViewTransform(viewId, GetViewMatrix().GetData(), GetProjectionMatrix().GetData());
 }
 
+Frustum Camera::CreateFrustum() const
+{
+	if (mProjectionMode == ProjectionMode::Perspective)
+	{
+		return Frustum(perspective.fov, perspective.aspect, perspective.nearPlane, perspective.farPlane, mPosition, mPosition + mDirection, ENGINE_DEFAULT_UP, ENGINE_DEFAULT_HANDEDNESS);
+	}
+	else
+	{
+		assert(false); // TODO
+		return Frustum();
+	}
+}
+
 void Camera::SetProjection(ProjectionMode projection)
 {
 	mProjectionMode = projection;
@@ -24,13 +37,13 @@ Camera::ProjectionMode Camera::GetProjection() const
 	return mProjectionMode;
 }
 
-void Camera::InitializePerspective(F32 fov, F32 ratio, F32 nearPlane, F32 farPlane)
+void Camera::InitializePerspective(F32 fov, F32 aspect, F32 nearPlane, F32 farPlane)
 {
 	mProjectionMode = ProjectionMode::Perspective;
 	perspective.nearPlane = nearPlane;
 	perspective.farPlane = farPlane;
 	perspective.fov = fov;
-	perspective.ratio = ratio;
+	perspective.aspect = aspect;
 	mProjectionDirty = true;
 }
 
@@ -109,17 +122,17 @@ F32 Camera::GetFOV() const
 	return perspective.fov;
 }
 
-void Camera::SetRatio(F32 ratio)
+void Camera::SetAspect(F32 aspect)
 {
 	assert(mProjectionMode == ProjectionMode::Perspective);
-	perspective.ratio = ratio;
+	perspective.aspect = aspect;
 	mProjectionDirty = true;
 }
 
-F32 Camera::GetRatio() const
+F32 Camera::GetAspect() const
 {
 	assert(mProjectionMode == ProjectionMode::Perspective);
-	return perspective.ratio;
+	return perspective.aspect;
 }
 
 void Camera::SetLeft(F32 left)
@@ -245,7 +258,7 @@ void Camera::UpdateProjectionMatrix() const
 	const bool homogenousDepth = true;// bgfx::getCaps()->homogeneousDepth;
 	if (mProjectionMode == ProjectionMode::Perspective)
 	{
-		mProjectionMatrix = Matrix4f::Perspective(perspective.fov, perspective.ratio, perspective.nearPlane, perspective.farPlane, homogenousDepth, ENGINE_DEFAULT_HANDEDNESS);
+		mProjectionMatrix = Matrix4f::Perspective(perspective.fov, perspective.aspect, perspective.nearPlane, perspective.farPlane, homogenousDepth, ENGINE_DEFAULT_HANDEDNESS);
 	}
 	else
 	{

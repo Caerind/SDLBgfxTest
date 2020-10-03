@@ -2,15 +2,17 @@
 
 #include <bx/timer.h>
 
-#include "SDLWrapper.hpp"
-#include "Window.hpp"
+#include "Window/SDLWrapper.hpp"
+#include "Window/Window.hpp"
+#include "Window/Mouse.hpp"
+#include "Window/Keyboard.hpp"
+#include "Window/EventSystem.hpp"
+
 #include "BgfxWrapper.hpp"
 #include "ImGuiWrapper.hpp"
 #include "Shader.hpp"
 #include "Sprite.hpp"
 #include "Texture.hpp"
-#include "Mouse.hpp"
-#include "Keyboard.hpp"
 #include "Camera.hpp"
 #include "Math/Matrix3.hpp"
 #include "Math/Matrix4.hpp"
@@ -22,6 +24,7 @@ bool app(Window& window);
 void CameraUpdateTotalWar(Camera& camera, F32 deltaTime);
 void CameraUpdateOldFps(Camera& camera, F32 deltaTime);
 void CameraUpdateNewFps(Camera& camera, F32 deltaTime);
+void CameraUpdateMaya(Camera& camera, F32 deltaTime);
 
 void printMtx3(const Matrix3f& m)
 {
@@ -107,69 +110,39 @@ bool app(Window& window)
 	spriteB.SetTexture(textureB);
 	Matrix4f spriteBTransform = Matrix4f::Translation(2.0f, 2.0f, 0.0f);
 
-	bool cameraOldFps = false;
-
 	Camera camera;
 	camera.InitializePerspective(80.0f, F32(window.GetWidth()) / F32(window.GetHeight()), 0.1f, 100.0f);
 	camera.InitializeView(Vector3f(0.0f, 1.0f, 5.0f), Vector3f(0.0f, 0.0f, 0.0f));
 
+	// TODO : Fix me
+	Frustum frustum = camera.CreateFrustum();
+	printf("(0,0,0) %d==1\n", frustum.Contains(Vector3f::Zero()));
+	printf("(0,0,10) %d==0\n", frustum.Contains(Vector3f(0, 0, 10)));
+
 	I64 lastTime = bx::getHPCounter();
 	const double frequency = double(bx::getHPFrequency());
 
+	const bgfx::ViewId mainViewId = 100;
 	const bgfx::ViewId imguiViewId = 250;
+
+	EventSystem::AddKey("moveForward", Keyboard::Key::W, EventSystem::ButtonActionType::Hold);
+	EventSystem::AddKey("moveLeft", Keyboard::Key::A, EventSystem::ButtonActionType::Hold);
+	EventSystem::AddKey("moveBackward", Keyboard::Key::S, EventSystem::ButtonActionType::Hold);
+	EventSystem::AddKey("moveRight", Keyboard::Key::D, EventSystem::ButtonActionType::Hold);
+	U32 toggleGraphStats = EventSystem::AddKey("toggleGraphStats", Keyboard::Key::F3, EventSystem::ButtonActionType::Pressed, static_cast<U32>(Keyboard::Modifier::Control));
 
 	while (!window.ShouldClose())
 	{
-		// Begin frame
-		Mouse::Refresh();
-		Keyboard::Refresh();
+		EventSystem::Update();
 
-		// Event loop
-		SDL_Event event;
-		while (SDLWrapper::PollEvent(event))
+		if (EventSystem::ShouldClose())
 		{
-			switch (event.type)
-			{
-			case SDL_MOUSEWHEEL:
-			case SDL_MOUSEBUTTONDOWN:
-			{
-				Mouse::HandleEvent(event);
-				break;
-			}
-			case SDL_KEYDOWN:
-			case SDL_KEYUP:
-			case SDL_TEXTINPUT:
-			{
-				Keyboard::HandleEvent(event);
-				break;
-			}
-			case SDL_QUIT:
-			{
-				window.Close();
-				break;
-			}
-			case SDL_WINDOWEVENT:
-			{
-				switch (event.window.event)
-				{
-				case SDL_WINDOWEVENT_CLOSE:
-				{
-					window.Close();
-					break;
-				}
-				}
-				break;
-			}
-			}
+			window.Close();
 		}
 
 		// ImGui
 #ifdef ENGINE_IMGUI
 		ImGuiWrapper::BeginFrame(imguiViewId);
-		ImGui::Begin("CameraControls");
-		ImGui::Checkbox("Use debug camera", &cameraOldFps);
-		ImGui::End();
-		//ImGui::ShowDemoWindow();
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 		ImGuizmo::Manipulate(
@@ -190,18 +163,11 @@ bool app(Window& window)
 
 		spriteBTransform *= Matrix4f::RotationY(180.0f * dt);
 
-		if (cameraOldFps)
-		{
-			CameraUpdateOldFps(camera, dt);
-		}
-		else
-		{
-			CameraUpdateNewFps(camera, dt);
-		}
+		CameraUpdateOldFps(camera, dt);
 
 		// Toggle debug stats
 #ifdef ENGINE_DEBUG
-		if (Keyboard::IsControlHold() && Keyboard::IsPressed(Keyboard::Key::F3))
+		if (EventSystem::IsKeyActive(toggleGraphStats))
 		{
 			BgfxWrapper::ToggleDisplayStats();
 		}
@@ -209,7 +175,7 @@ bool app(Window& window)
 
 		// Render
 		{
-			bgfx::touch(BgfxWrapper::kClearView);
+			bgfx::touch(mainViewId);
 
 			// Display mouse pos
 			bgfx::dbgTextClear();
@@ -218,15 +184,15 @@ bool app(Window& window)
 			const I32 dbgMouseWheel = Mouse::GetWheel();
 			bgfx::dbgTextPrintf(0, 0, 0x0f, "Mouse: (%d, %d) (%d, %d) (%d)", dbgMousePos.x, dbgMousePos.y, dbgMouseDeltaPos.x, dbgMouseDeltaPos.y, dbgMouseWheel);
 
-			camera.Apply(BgfxWrapper::kClearView);
+			camera.Apply(mainViewId);
 
-			spriteA.Render(BgfxWrapper::kClearView);
+			spriteA.Render(mainViewId);
 
 			bgfx::setTransform(spriteATransform.GetData());
-			spriteA2.Render(BgfxWrapper::kClearView);
+			spriteA2.Render(mainViewId);
 
 			bgfx::setTransform(spriteBTransform.GetData());
-			spriteB.Render(BgfxWrapper::kClearView);
+			spriteB.Render(mainViewId);
 
 			bgfx::frame();
 		}
@@ -359,5 +325,13 @@ void CameraUpdateNewFps(Camera& camera, F32 deltaTime)
 		yaw *= 20.0f * deltaTime;
 		direction = Matrix3f::RotationY(yaw).TransformDirection(direction);
 		rotated = true;
+	}
+}
+
+void CameraUpdateMaya(Camera& camera, F32 deltaTime)
+{
+	if (Keyboard::IsAltHold())
+	{
+
 	}
 }

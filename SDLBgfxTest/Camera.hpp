@@ -6,6 +6,7 @@
 
 #include "Math/Vector3.hpp"
 #include "Math/Matrix4.hpp"
+#include "Math/Frustum.hpp"
 
 namespace NAMESPACE_NAME
 {
@@ -17,6 +18,8 @@ public:
 
 	void Apply(bgfx::ViewId viewId) const;
 
+	Frustum CreateFrustum() const;
+
     // Projection
 
     enum class ProjectionMode
@@ -27,7 +30,7 @@ public:
     void SetProjection(ProjectionMode projection);
     ProjectionMode GetProjection() const;
 
-    void InitializePerspective(F32 fov, F32 ratio, F32 nearPlane, F32 farPlane);
+    void InitializePerspective(F32 fov, F32 aspect, F32 nearPlane, F32 farPlane);
 	void InitializeOrthographic(F32 left, F32 top, F32 right, F32 bottom, F32 nearPlane, F32 farPlane);
 
 	void SetNearPlane(F32 nearPlane);
@@ -39,8 +42,8 @@ public:
 	void SetFOV(F32 fov);
 	F32 GetFOV() const;
 
-	void SetRatio(F32 ratio);
-	F32 GetRatio() const;
+	void SetAspect(F32 aspect);
+	F32 GetAspect() const;
 
 	void SetLeft(F32 left);
 	F32 GetLeft() const;
@@ -81,7 +84,7 @@ private:
 		F32 nearPlane;
 		F32 farPlane;
 		F32 fov;
-		F32 ratio;
+		F32 aspect;
 	};
 
 	struct OrthographicData

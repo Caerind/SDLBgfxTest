@@ -1,8 +1,8 @@
 #pragma once
 
-#include "EngineIntegration.hpp"
+#include "../EngineIntegration.hpp"
 
-#include "Math/Vector2.hpp"
+#include "../Math/Vector2.hpp"
 #include "Window.hpp"
 
 namespace NAMESPACE_NAME
@@ -37,9 +37,13 @@ public:
 		Middle,
 		Right,
 		X1,
-		X2
+		X2,
+
+		Count
 	};
+	static bool IsHold(Button button);
 	static bool IsPressed(Button button);
+	static bool IsReleased(Button button);
 
 private:
 	static Mouse& GetInstance();
@@ -54,6 +58,7 @@ private:
 
 	Vector2i mPosition;
 	Vector2i mDelta;
+	U32 mPreviousButtonMask;
 	U32 mButtonMask;
 	I32 mWheel;
 	I32 mHorizontalWheel;
