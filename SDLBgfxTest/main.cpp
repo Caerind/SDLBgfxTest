@@ -90,7 +90,9 @@ bool app(Window& window)
 	for (U32 i = 0; i < Controller::GetJoystickCount(); ++i)
 	{
 		Controller::Rumble(i, 0.25f, 100); // Ensure the controller is working when debugging
-		printf("%s name\n%d axes, %d balls, %d buttons, %d hats\n", Controller::GetControllerName(i), Controller::GetControllerAxisCount(i), Controller::GetControllerBallCount(i), Controller::GetControllerButtonCount(i), Controller::GetControllerHatCount(i));
+		printf("%s name\n%d axes, %d balls, %d buttons, %d hats\n", Controller::GetName(i), Controller::GetAxisCount(i), Controller::GetBallCount(i), Controller::GetButtonCount(i), Controller::GetHatCount(i));
+		printf("%d haptic\n", Controller::IsHaptic(i));
+		printf("\n");
 	}
 
 	Texture textureA;
@@ -137,6 +139,8 @@ bool app(Window& window)
 	EventSystem::AddKey("moveBackward", Keyboard::Key::S, EventSystem::ButtonActionType::Hold);
 	EventSystem::AddKey("moveRight", Keyboard::Key::D, EventSystem::ButtonActionType::Hold);
 	EventSystem::AddKey("action", Keyboard::Key::E, EventSystem::ButtonActionType::Pressed);
+	EventSystem::AddJoystickButton("jactionP1", 0, 0, EventSystem::ButtonActionType::Pressed);
+	EventSystem::AddJoystickButton("jactionP2", 1, 0, EventSystem::ButtonActionType::Pressed);
 	U32 toggleGraphStats = EventSystem::AddKey("toggleGraphStats", Keyboard::Key::F3, EventSystem::ButtonActionType::Pressed, static_cast<U32>(Keyboard::Modifier::Control));
 
 	while (!window.ShouldClose())
@@ -163,12 +167,51 @@ bool app(Window& window)
 		ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
 
-		if (EventSystem::IsKeyActive("action"))
+		if (EventSystem::IsKeyActive("action") || EventSystem::IsJoystickButtonActive("jactionP1"))
 		{
 			printf("Action!\n");
 			if (!Controller::Rumble(0, 0.25f, 100))
 			{
 				printf("Can't rumble : %s\n", SDLWrapper::GetError());
+			}
+		}
+		
+		for (U32 i = 0; i <= 1; ++i)
+		{
+			if (Controller::IsHatHold(i, 0, Controller::HatValue::Left))
+			{
+				printf("Left %d\n", i);
+			}
+			if (Controller::IsHatPressed(i, 0, Controller::HatValue::Right))
+			{
+				printf("Right %d\n", i);
+			}
+			if (Controller::IsHatReleased(i, 0, Controller::HatValue::Up))
+			{
+				printf("Up %d\n", i);
+			}
+			if (Controller::IsHatReleased(i, 0, Controller::HatValue::Down))
+			{
+				printf("Down %d\n", i);
+			}
+			if (Controller::IsButtonPressed(i, 0))
+			{
+				Controller::Rumble(i, 0.25f, 100);
+			}
+			if (Controller::IsButtonReleased(i, 1))
+			{
+				Controller::Rumble(i, 0.75f, 100);
+			}
+			if (Controller::IsButtonHold(i, 2))
+			{
+				Controller::Rumble(i, 0.5f, 100);
+			}
+			for (U32 j = 0; j < 6; ++j)
+			{
+				if (Controller::HasAxisMoved(i, j))
+				{
+					printf("C%d A%d moved : %f\n", i, j, Controller::GetAxis(i, j));
+				}
 			}
 		}
 

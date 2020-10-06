@@ -11,6 +11,7 @@ void EventSystem::Update()
 
 	Mouse::Refresh();
 	Keyboard::Refresh();
+	Controller::Refresh();
 
 	SDL_Event event;
 	while (SDLWrapper::PollEvent(event))
@@ -66,6 +67,28 @@ void EventSystem::Update()
 			break;
 		default: 
 			assert(false); 
+			break;
+		}
+	}
+
+	for (EventJoystickButton& eventJoystickButton : eventSystem.mJoystickButtons)
+	{
+		switch (eventJoystickButton.action)
+		{
+		case ButtonActionType::None:
+			eventJoystickButton.active = false;
+			break;
+		case ButtonActionType::Hold:
+			eventJoystickButton.active = Controller::IsButtonHold(eventJoystickButton.controllerId, eventJoystickButton.buttonIndex);
+			break;
+		case ButtonActionType::Pressed:
+			eventJoystickButton.active = Controller::IsButtonPressed(eventJoystickButton.controllerId, eventJoystickButton.buttonIndex);
+			break;
+		case ButtonActionType::Released:
+			eventJoystickButton.active = Controller::IsButtonReleased(eventJoystickButton.controllerId, eventJoystickButton.buttonIndex);
+			break;
+		default:
+			assert(false);
 			break;
 		}
 	}
@@ -193,6 +216,70 @@ void EventSystem::RemoveMouseButton(U32 hash)
 		if (eventSystem.mMouseButtons[i].hash == hash)
 		{
 			eventSystem.mMouseButtons.erase(eventSystem.mMouseButtons.begin() + i);
+			return;
+		}
+	}
+}
+
+bool EventSystem::IsJoystickButtonActive(const char* name)
+{
+	return IsJoystickButtonActive(HashFct(name));
+}
+
+bool EventSystem::IsJoystickButtonActive(U32 hash)
+{
+	EventSystem& eventSystem = GetInstance();
+	const U32 joystickButtonCount = static_cast<U32>(eventSystem.mJoystickButtons.size());
+	for (U32 i = 0; i < joystickButtonCount; ++i)
+	{
+		if (eventSystem.mJoystickButtons[i].hash == hash)
+		{
+			return eventSystem.mJoystickButtons[i].active;
+		}
+	}
+	return false;
+}
+
+U32 EventSystem::GetJoystickButtonCount()
+{
+	return static_cast<U32>(GetInstance().mJoystickButtons.size());
+}
+
+U32 EventSystem::AddJoystickButton(const char* name, U32 controllerId, U32 buttonIndex, ButtonActionType action)
+{
+	EventJoystickButton eventJoystickButton;
+#ifdef ENGINE_DEBUG
+	eventJoystickButton.name = name;
+#endif // ENGINE_DEBUG
+	eventJoystickButton.hash = HashFct(name);
+	eventJoystickButton.active = false;
+	eventJoystickButton.controllerId = controllerId;
+	eventJoystickButton.buttonIndex = buttonIndex;
+	eventJoystickButton.action = action;
+	GetInstance().mJoystickButtons.push_back(eventJoystickButton);
+	return eventJoystickButton.hash;
+}
+
+void EventSystem::RemoveJoystickButtonAtIndex(U32 index)
+{
+	EventSystem& eventSystem = GetInstance();
+	eventSystem.mJoystickButtons.erase(eventSystem.mJoystickButtons.begin() + index);
+}
+
+void EventSystem::RemoveJoystickButton(const char* name)
+{
+	RemoveJoystickButton(HashFct(name));
+}
+
+void EventSystem::RemoveJoystickButton(U32 hash)
+{
+	EventSystem& eventSystem = GetInstance();
+	const U32 joystickButtonCount = static_cast<U32>(eventSystem.mJoystickButtons.size());
+	for (U32 i = 0; i < joystickButtonCount; ++i)
+	{
+		if (eventSystem.mJoystickButtons[i].hash == hash)
+		{
+			eventSystem.mJoystickButtons.erase(eventSystem.mJoystickButtons.begin() + i);
 			return;
 		}
 	}

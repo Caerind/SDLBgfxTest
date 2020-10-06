@@ -58,6 +58,17 @@ public:
 		EventMouseButton() = default;
 	};
 
+	class EventJoystickButton : public EventBase
+	{
+	public:
+		U32 controllerId;
+		U32 buttonIndex;
+		ButtonActionType action;
+	private:
+		friend class EventSystem;
+		EventJoystickButton() = default;
+	};
+
 public:
 	static void Update();
 
@@ -76,6 +87,14 @@ public:
 	static void RemoveMouseButtonAtIndex(U32 index);
 	static void RemoveMouseButton(const char* name);
 	static void RemoveMouseButton(U32 hash);
+
+	static bool IsJoystickButtonActive(const char* name);
+	static bool IsJoystickButtonActive(U32 hash);
+	static U32 GetJoystickButtonCount();
+	static U32 AddJoystickButton(const char* name, U32 controllerId, U32 buttonIndex, ButtonActionType action);
+	static void RemoveJoystickButtonAtIndex(U32 index);
+	static void RemoveJoystickButton(const char* name);
+	static void RemoveJoystickButton(U32 hash);
 
 	static void SetMouseMoveThreshold(F32 mouseMoveThreshold);
 	static F32 GetMouseMoveThreshold();
@@ -101,6 +120,7 @@ private:
 
 	std::vector<EventKey> mKeys;
 	std::vector<EventMouseButton> mMouseButtons;
+	std::vector<EventJoystickButton> mJoystickButtons;
 	F32 mMouseMoveTreshold;
 	bool mShouldClose;
 };

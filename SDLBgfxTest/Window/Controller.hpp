@@ -6,152 +6,117 @@
 
 #include <SDL.h>
 
+#include "../Math/Vector2.hpp"
+
 namespace NAMESPACE_NAME
 {
 
 class Controller
 {
 public:
-	static U32 GetJoystickCount() { return static_cast<U32>(SDL_NumJoysticks()); }
-	static U32 GetHapticCount() { return static_cast<U32>(SDL_NumHaptics()); }
+	static U32 GetJoystickCount();
+	static U32 GetHapticCount();
+	static void SetThreshold(U32 threshold);
+	static U32 GetThreshold();
 
-	static void HandleEvent(const SDL_Event& event)
-	{
-		if (event.type == SDL_JOYAXISMOTION)
-		{
-		}
-		else if (event.type == SDL_JOYBUTTONDOWN || event.type == SDL_JOYBUTTONUP)
-		{
-		}
-		else if (event.type == SDL_JOYHATMOTION)
-		{
-		}
-		else if (event.type == SDL_JOYBALLMOTION)
-		{
-		}
-	}
+	static void Refresh();
+	static void HandleEvent(const SDL_Event& event);
 
-	static const char* GetControllerName(U32 controllerId)
-	{
-		Controller& controller = GetInstance();
-		if (controllerId < static_cast<U32>(controller.mJoysticks.size()))
-		{
-			if (SDL_Joystick* joystick = controller.mJoysticks[controllerId].joystick)
-			{
-				return SDL_JoystickName(joystick);
-			}
-		}
-		return "";
-	}
-	static U32 GetControllerAxisCount(U32 controllerId)
-	{
-		Controller& controller = GetInstance();
-		if (controllerId < static_cast<U32>(controller.mJoysticks.size()))
-		{
-			if (SDL_Joystick* joystick = controller.mJoysticks[controllerId].joystick)
-			{
-				return SDL_JoystickNumAxes(joystick);
-			}
-		}
-		return 0;
-	}
-	static U32 GetControllerBallCount(U32 controllerId)
-	{
-		Controller& controller = GetInstance();
-		if (controllerId < static_cast<U32>(controller.mJoysticks.size()))
-		{
-			if (SDL_Joystick* joystick = controller.mJoysticks[controllerId].joystick)
-			{
-				return SDL_JoystickNumBalls(joystick);
-			}
-		}
-		return 0;
-	}
-	static U32 GetControllerButtonCount(U32 controllerId)
-	{
-		Controller& controller = GetInstance();
-		if (controllerId < static_cast<U32>(controller.mJoysticks.size()))
-		{
-			if (SDL_Joystick* joystick = controller.mJoysticks[controllerId].joystick)
-			{
-				return SDL_JoystickNumButtons(joystick);
-			}
-		}
-		return 0;
-	}
-	static U32 GetControllerHatCount(U32 controllerId)
-	{
-		Controller& controller = GetInstance();
-		if (controllerId < static_cast<U32>(controller.mJoysticks.size()))
-		{
-			if (SDL_Joystick* joystick = controller.mJoysticks[controllerId].joystick)
-			{
-				return SDL_JoystickNumHats(joystick);
-			}
-		}
-		return 0;
-	}
+	static bool IsValid(U32 controllerId);
+	static const char* GetName(U32 controllerId);
+	static U32 GetAxisCount(U32 controllerId);
+	static U32 GetBallCount(U32 controllerId);
+	static U32 GetButtonCount(U32 controllerId);
+	static U32 GetHatCount(U32 controllerId);
 
-	static bool IsControllerHaptic(U32 controllerId)
-	{
-		Controller& controller = GetInstance();
-		if (controllerId < static_cast<U32>(controller.mJoysticks.size()))
-		{
-			if (SDL_Joystick* joystick = controller.mJoysticks[controllerId].joystick)
-			{
-				return SDL_JoystickIsHaptic(joystick) && controller.mJoysticks[controllerId].haptic != nullptr;
-			}
-		}
-		return false;
-	}
+	// Axes
+	static bool HasAxisMoved(U32 controllerId, U32 axisIndex);
+	static F32 GetAxis(U32 controllerId, U32 axisIndex);
 
-	static bool Rumble(U32 controllerId, F32 strength, U32 durationMs)
+	// Balls
+	static bool HasBallMoved(U32 controllerId, U32 ballIndex);
+	static Vector2f GetBallVector(U32 controllerId, U32 ballIndex); // Not normalized, Y up
+	
+	// Buttons
+	static bool IsButtonHold(U32 controllerId, U32 buttonIndex);
+	static bool IsButtonPressed(U32 controllerId, U32 buttonIndex);
+	static bool IsButtonReleased(U32 controllerId, U32 buttonIndex);
+
+	// Hats
+	enum class HatValue
 	{
-		Controller& controller = GetInstance();		
-		if (controllerId < static_cast<U32>(controller.mJoysticks.size()))
-		{
-			if (SDL_Haptic* haptic = controller.mJoysticks[controllerId].haptic)
-			{
-				return SDL_HapticRumblePlay(haptic, strength, durationMs) >= 0;
-			}
-		}
-		return false;
-	}
+		Centered = 0,
+		Up = 0x01,
+		Right = 0x02,
+		Down = 0x04,
+		Left = 0x08,
+		RightUp = (Right | Up),
+		RightDown = (Right | Down),
+		LeftUp = (Left | Up),
+		LeftDown = (Left | Down)
+	};
+	static bool IsHatHold(U32 controllerId, U32 hatIndex, HatValue value);
+	static bool IsHatPressed(U32 controllerId, U32 hatIndex, HatValue value);
+	static bool IsHatReleased(U32 controllerId, U32 hatIndex, HatValue value);
+	static Vector2f GetHatVector(U32 controllerId, U32 hatIndex); // Not normalized, Y up
+
+	// Haptic
+	static bool IsHaptic(U32 controllerId);
+	static bool Rumble(U32 controllerId, F32 strength, U32 durationMs);
 
 private:
-	static Controller& GetInstance() { static Controller instance; return instance; }
+	static Controller& GetInstance();
 
-	Controller()
-		: mJoysticks()
-	{
-		// Use the SDL event loop : Recommended by documentation
-		SDL_JoystickEventState(SDL_ENABLE);
-
-		const U32 joystickCount = GetJoystickCount();
-		mJoysticks.reserve(joystickCount);
-		for (U32 i = 0; i < joystickCount; ++i)
-		{
-			Joystick joystick;
-			joystick.joystick = SDL_JoystickOpen(static_cast<int>(i));
-			if (joystick.joystick != nullptr)
-			{
-				joystick.haptic = SDL_HapticOpenFromJoystick(joystick.joystick);
-				if (joystick.haptic != nullptr)
-				{
-					SDL_HapticRumbleInit(joystick.haptic);
-				}
-			}
-			mJoysticks.push_back(joystick);
-		}
-	}
+	Controller();
 
 	struct Joystick
 	{
+		Joystick();
+
 		SDL_Joystick* joystick;
 		SDL_Haptic* haptic;
+
+		enum class State
+		{
+			None = 0,
+			Hold = 0x01,
+			Pressed = 0x02,
+			Released = 0x04
+		};
+
+		struct AxisData
+		{
+			I16 value{ 0 };
+			bool moved{ false };
+		};
+		std::vector<AxisData> axes;
+
+		struct BallData
+		{
+			I16 deltaX{ 0 };
+			I16 deltaY{ 0 };
+			bool moved{ false };
+		};
+		std::vector<BallData> balls;
+
+		std::vector<U8> buttons;
+
+		struct HatData
+		{
+			HatValue value{ HatValue::Centered };
+			HatValue previousValue{ HatValue::Centered };
+			U8 state{ 0 };
+		};
+		std::vector<HatData> hats;
 	};
 
 	std::vector<Joystick> mJoysticks;
+	U32 mThreshold;
+
+	static Joystick* GetJoystickFromControllerID(U32 controllerId);
+	static Joystick* GetJoystickFromJoystickID(SDL_JoystickID joystickId);
+
+	static F32 NormalizeSignedInt(I16 value);
 };
 
 } // namespace NAMESPACE_NAME

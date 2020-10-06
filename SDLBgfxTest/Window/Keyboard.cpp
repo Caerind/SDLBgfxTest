@@ -7,7 +7,7 @@ void Keyboard::Refresh()
 {
 	Keyboard& keyboard = GetInstance();
 
-	static constexpr U8 clearEvents = (1 << static_cast<U8>(KeyState::Pressed)) | (1 << static_cast<U8>(KeyState::Released));
+	const U8 clearEvents = static_cast<U8>(KeyState::Pressed) | static_cast<U8>(KeyState::Released);
 	for (U32 i = 0; i < kKeyCount; ++i)
 	{
 		keyboard.mKeyStates[i] &= ~clearEvents;
@@ -26,13 +26,11 @@ void Keyboard::HandleEvent(const SDL_Event& event)
 		const Key key = GetKeyFromSDLKey(event.key.keysym.scancode);
 		if (keyDown)
 		{
-			static constexpr U8 press = (1 << static_cast<U8>(KeyState::Hold)) | (1 << static_cast<U8>(KeyState::Pressed));
-			keyboard.mKeyStates[static_cast<U32>(key)] |= press;
+			keyboard.mKeyStates[static_cast<U32>(key)] = (static_cast<U8>(KeyState::Hold) | static_cast<U8>(KeyState::Pressed));
 		}
-		else // keyUp
+		else
 		{
-			static constexpr U8 release = (1 << static_cast<U8>(KeyState::Released));
-			keyboard.mKeyStates[static_cast<U32>(key)] = release; // This also clear the hold & press
+			keyboard.mKeyStates[static_cast<U32>(key)] = static_cast<U8>(KeyState::Released);
 		}
 
 		U8 modifier = 0;
@@ -84,20 +82,17 @@ void Keyboard::HandleEvent(const SDL_Event& event)
 
 bool Keyboard::IsHold(Key key)
 {
-	static constexpr U8 hold = 1 << static_cast<U8>(KeyState::Hold);
-	return (GetInstance().mKeyStates[static_cast<U32>(key)] & hold) > 0;
+	return (GetInstance().mKeyStates[static_cast<U32>(key)] & static_cast<U8>(KeyState::Hold)) > 0;
 }
 
 bool Keyboard::IsPressed(Key key)
 {
-	static constexpr U8 pressed = 1 << static_cast<U8>(KeyState::Pressed);
-	return (GetInstance().mKeyStates[static_cast<U32>(key)] & pressed) > 0;
+	return (GetInstance().mKeyStates[static_cast<U32>(key)] & static_cast<U8>(KeyState::Pressed)) > 0;
 }
 
 bool Keyboard::IsReleased(Key key)
 {
-	static constexpr U8 released = 1 << static_cast<U8>(KeyState::Released);
-	return (GetInstance().mKeyStates[static_cast<U32>(key)] & released) > 0;
+	return (GetInstance().mKeyStates[static_cast<U32>(key)] & static_cast<U8>(KeyState::Released)) > 0;
 }
 
 bool Keyboard::AreModifiersHold(U32 modifiers)
