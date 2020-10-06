@@ -14,8 +14,8 @@ void Mouse::Refresh()
 	mouse.mButtonMask = SDL_GetMouseState(&pX, &pY);
 	const I32 x = static_cast<I32>(pX);
 	const I32 y = static_cast<I32>(pY);
-	mouse.mDelta.x = x - mouse.mPosition.x;
-	mouse.mDelta.y = y - mouse.mPosition.y;
+	mouse.mMouseMovement.x = x - mouse.mPosition.x;
+	mouse.mMouseMovement.y = y - mouse.mPosition.y;
 	mouse.mPosition.x = x;
 	mouse.mPosition.y = y;
 	mouse.mWheel = 0;
@@ -25,7 +25,10 @@ void Mouse::Refresh()
 void Mouse::HandleEvent(const SDL_Event& event)
 {
 	Mouse& mouse = GetInstance();
-	if (event.type == SDL_MOUSEBUTTONDOWN)
+	if (event.type == SDL_MOUSEMOTION)
+	{
+	}
+	else if (event.type == SDL_MOUSEBUTTONDOWN)
 	{
 		mouse.mButtonMask |= event.button.button;
 	}
@@ -40,16 +43,6 @@ void Mouse::HandleEvent(const SDL_Event& event)
 		if (event.wheel.y > 0) mouse.mWheel += 1;
 		if (event.wheel.y < 0) mouse.mWheel -= 1;
 	}
-}
-
-bool Mouse::SetRelativeMode(bool enabled)
-{
-	return SDL_SetRelativeMouseMode(enabled ? SDL_TRUE : SDL_FALSE) >= 0;
-}
-
-bool Mouse::IsRelativeMode()
-{
-	return SDL_GetRelativeMouseMode();
 }
 
 void Mouse::SetPositionGlobal(const Vector2i& mousePos)
@@ -75,14 +68,30 @@ Vector2i Mouse::GetPositionCurrentWindow()
 	return GetInstance().mPosition;
 }
 
-Vector2i Mouse::GetDeltaPosition()
+bool Mouse::HasMouseMoved()
 {
-	return GetInstance().mDelta;
+	Mouse& mouse = GetInstance();
+	return mouse.mMouseMovement.x != 0 || mouse.mMouseMovement.y != 0;
+}
+
+Vector2i Mouse::GetMouseMovement()
+{
+	return GetInstance().mMouseMovement;
+}
+
+bool Mouse::HasWheelMoved()
+{
+	return GetInstance().mWheel != 0;
 }
 
 I32 Mouse::GetWheel()
 {
 	return GetInstance().mWheel;
+}
+
+bool Mouse::HasHorizontalWheelMoved()
+{
+	return GetInstance().mHorizontalWheel != 0;
 }
 
 I32 Mouse::GetHorizontalWheel()
@@ -156,7 +165,7 @@ Mouse& Mouse::GetInstance()
 
 Mouse::Mouse()
 	: mPosition(0, 0)
-	, mDelta(0, 0)
+	, mMouseMovement(0, 0)
 	, mPreviousButtonMask(0)
 	, mButtonMask(0)
 	, mWheel(0)

@@ -131,7 +131,7 @@ public:
 
 		bool rotated = false;
 
-		F32 yaw = static_cast<F32>(Mouse::GetDeltaPosition().x);
+		F32 yaw = static_cast<F32>(Mouse::GetMouseMovement().x);
 		if (!Math::Equals(yaw, 0.0f))
 		{
 			yaw *= 20.0f * deltaTime;

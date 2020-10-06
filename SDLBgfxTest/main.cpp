@@ -134,14 +134,14 @@ bool app(Window& window)
 	const bgfx::ViewId mainViewId = 0;
 	const bgfx::ViewId imguiViewId = 250;
 
-	EventSystem::AddKey("moveForward", Keyboard::Key::W, EventSystem::ButtonActionType::Hold);
-	EventSystem::AddKey("moveLeft", Keyboard::Key::A, EventSystem::ButtonActionType::Hold);
-	EventSystem::AddKey("moveBackward", Keyboard::Key::S, EventSystem::ButtonActionType::Hold);
-	EventSystem::AddKey("moveRight", Keyboard::Key::D, EventSystem::ButtonActionType::Hold);
-	EventSystem::AddKey("action", Keyboard::Key::E, EventSystem::ButtonActionType::Pressed);
-	EventSystem::AddJoystickButton("jactionP1", 0, 0, EventSystem::ButtonActionType::Pressed);
-	EventSystem::AddJoystickButton("jactionP2", 1, 0, EventSystem::ButtonActionType::Pressed);
-	U32 toggleGraphStats = EventSystem::AddKey("toggleGraphStats", Keyboard::Key::F3, EventSystem::ButtonActionType::Pressed, static_cast<U32>(Keyboard::Modifier::Control));
+	EventSystem::AddButton("moveForward", Keyboard::Key::W, EventSystem::ButtonActionType::Hold);
+	EventSystem::AddButton("moveLeft", Keyboard::Key::A, EventSystem::ButtonActionType::Hold);
+	EventSystem::AddButton("moveBackward", Keyboard::Key::S, EventSystem::ButtonActionType::Hold);
+	EventSystem::AddButton("moveRight", Keyboard::Key::D, EventSystem::ButtonActionType::Hold);
+	EventSystem::AddButton("action", Keyboard::Key::E, EventSystem::ButtonActionType::Pressed);
+	EventSystem::AddButton("jactionP1", 0, 0, EventSystem::ButtonActionType::Pressed);
+	EventSystem::AddButton("jactionP2", 1, 0, EventSystem::ButtonActionType::Pressed);
+	U32 toggleGraphStats = EventSystem::AddButton("toggleGraphStats", Keyboard::Key::F3, EventSystem::ButtonActionType::Pressed, static_cast<U32>(Keyboard::Modifier::Control));
 
 	while (!window.ShouldClose())
 	{
@@ -167,7 +167,7 @@ bool app(Window& window)
 		ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
 
-		if (EventSystem::IsKeyActive("action") || EventSystem::IsJoystickButtonActive("jactionP1"))
+		if (EventSystem::IsButtonActive("action") || EventSystem::IsButtonActive("jactionP1"))
 		{
 			printf("Action!\n");
 			if (!Controller::Rumble(0, 0.25f, 100))
@@ -227,7 +227,7 @@ bool app(Window& window)
 
 		// Toggle debug stats
 #ifdef ENGINE_DEBUG
-		if (EventSystem::IsKeyActive(toggleGraphStats))
+		if (EventSystem::IsButtonActive(toggleGraphStats))
 		{
 			BgfxWrapper::ToggleDisplayStats();
 		}
@@ -240,7 +240,7 @@ bool app(Window& window)
 			// Display mouse pos
 			bgfx::dbgTextClear();
 			const Vector2i dbgMousePos = Mouse::GetPositionCurrentWindow();
-			const Vector2i dbgMouseDeltaPos = Mouse::GetDeltaPosition();
+			const Vector2i dbgMouseDeltaPos = Mouse::GetMouseMovement();
 			const I32 dbgMouseWheel = Mouse::GetWheel();
 			bgfx::dbgTextPrintf(0, 0, 0x0f, "Mouse: (%d, %d) (%d, %d) (%d)", dbgMousePos.x, dbgMousePos.y, dbgMouseDeltaPos.x, dbgMouseDeltaPos.y, dbgMouseWheel);
 

@@ -15,18 +15,18 @@ public:
 	static void Refresh();
 	static void HandleEvent(const SDL_Event& event);
 
-	static bool SetRelativeMode(bool enabled);
-	static bool IsRelativeMode();
-
 	static void SetPositionGlobal(const Vector2i& mousePos);
 	static Vector2i GetPositionGlobal();
 
 	static void SetPositionCurrentWindow(const Vector2i& mousePos);
 	static Vector2i GetPositionCurrentWindow();
 
-	static Vector2i GetDeltaPosition();
+	static bool HasMouseMoved();
+	static Vector2i GetMouseMovement();
 
+	static bool HasWheelMoved();
 	static I32 GetWheel();
+	static bool HasHorizontalWheelMoved();
 	static I32 GetHorizontalWheel();
 
 	static Window* GetCurrentWindow();
@@ -57,7 +57,7 @@ private:
 	Mouse& operator=(Mouse&&) = delete;
 
 	Vector2i mPosition;
-	Vector2i mDelta;
+	Vector2i mMouseMovement;
 	U32 mPreviousButtonMask;
 	U32 mButtonMask;
 	I32 mWheel;

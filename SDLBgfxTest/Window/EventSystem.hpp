@@ -25,81 +25,49 @@ public:
 		Hold
 	};
 
+	enum class ButtonType
+	{
+		KeyboardKey,
+		MouseButton,
+		JoystickButton
+	};
+
 	class EventBase
 	{
 	protected:
 		EventBase() = default;
 
 #ifdef ENGINE_DEBUG
-		std::string name;
+		std::string name{};
 #endif // ENGINE_DEBUG
-		U32 hash;
-		bool active;
+		U32 hash{ 0 };
+		bool active{ false };
 	};
 
-	class EventKey : public EventBase
+	class EventButton : public EventBase
 	{
 	public:
-		Keyboard::Key key;
-		ButtonActionType action;
-		U32 modifiers;
+		ButtonType type{ButtonType::KeyboardKey};
+		U32 buttonIdentifier{ 0 }; // Key, MouseButton or JoystickButtonIndex
+		U32 extraInfo{ 0 }; // KeyModifiers, nothing or ControllerId
+		ButtonActionType action{ ButtonActionType::None };
 	private:
 		friend class EventSystem;
-		EventKey() = default;
-	};
-
-	class EventMouseButton : public EventBase
-	{
-	public:
-		Mouse::Button button;
-		ButtonActionType action;
-	private:
-		friend class EventSystem;
-		EventMouseButton() = default;
-	};
-
-	class EventJoystickButton : public EventBase
-	{
-	public:
-		U32 controllerId;
-		U32 buttonIndex;
-		ButtonActionType action;
-	private:
-		friend class EventSystem;
-		EventJoystickButton() = default;
+		EventButton() = default;
 	};
 
 public:
 	static void Update();
 
-	static bool IsKeyActive(const char* name);
-	static bool IsKeyActive(U32 hash);
-	static U32 GetKeyCount();
-	static U32 AddKey(const char* name, Keyboard::Key key, ButtonActionType action, U32 modifiers = static_cast<U32>(Keyboard::Modifier::None));
-	static void RemoveKeyAtIndex(U32 index);
-	static void RemoveKey(const char* name);
-	static void RemoveKey(U32 hash);
-
-	static bool IsMouseButtonActive(const char* name);
-	static bool IsMouseButtonActive(U32 hash);
-	static U32 GetMouseButtonCount();
-	static U32 AddMouseButton(const char* name, Mouse::Button mouseButton, ButtonActionType action);
-	static void RemoveMouseButtonAtIndex(U32 index);
-	static void RemoveMouseButton(const char* name);
-	static void RemoveMouseButton(U32 hash);
-
-	static bool IsJoystickButtonActive(const char* name);
-	static bool IsJoystickButtonActive(U32 hash);
-	static U32 GetJoystickButtonCount();
-	static U32 AddJoystickButton(const char* name, U32 controllerId, U32 buttonIndex, ButtonActionType action);
-	static void RemoveJoystickButtonAtIndex(U32 index);
-	static void RemoveJoystickButton(const char* name);
-	static void RemoveJoystickButton(U32 hash);
-
-	static void SetMouseMoveThreshold(F32 mouseMoveThreshold);
-	static F32 GetMouseMoveThreshold();
-	static bool HasMouseMoved();
-	static Vector2f GetMouseDelta();
+	static bool IsButtonActive(const char* name);
+	static bool IsButtonActive(U32 hash);
+	static U32 GetButtonCount();
+	static U32 AddButton(const char* name, Keyboard::Key key, ButtonActionType action, U32 modifiers = static_cast<U32>(Keyboard::Modifier::None));
+	static U32 AddButton(const char* name, Mouse::Button mouseButton, ButtonActionType action);
+	static U32 AddButton(const char* name, U32 controllerId, U32 buttonIndex, ButtonActionType action);
+	static void RemoveButtonAtIndex(U32 index);
+	static void RemoveButton(const char* name);
+	static void RemoveButton(U32 hash);
 
 	static bool ShouldClose();
 	static void ResetShouldClose();
@@ -118,10 +86,7 @@ private:
 	EventSystem(Mouse&&) = delete;
 	EventSystem& operator=(EventSystem&&) = delete;
 
-	std::vector<EventKey> mKeys;
-	std::vector<EventMouseButton> mMouseButtons;
-	std::vector<EventJoystickButton> mJoystickButtons;
-	F32 mMouseMoveTreshold;
+	std::vector<EventButton> mButtons;
 	bool mShouldClose;
 };
 
