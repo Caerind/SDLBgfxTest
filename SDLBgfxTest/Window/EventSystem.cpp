@@ -23,16 +23,16 @@ void EventSystem::Update()
 	{
 		switch (eventButton.type)
 		{
-		case ButtonType::KeyboardKey:
+		case EventButton::Type::KeyboardKey:
 		{
 			switch (eventButton.action)
 			{
-			case ButtonActionType::None:
+			case EventButton::ActionType::None:
 			{
 				eventButton.active = false;
 				break;
 			}
-			case ButtonActionType::Hold:
+			case EventButton::ActionType::Hold:
 			{
 				eventButton.active = Keyboard::IsHold(static_cast<Keyboard::Key>(eventButton.buttonIdentifier));
 				if (eventButton.active && eventButton.extraInfo > 0)
@@ -41,7 +41,7 @@ void EventSystem::Update()
 				}
 				break;
 			}
-			case ButtonActionType::Pressed:
+			case EventButton::ActionType::Pressed:
 			{
 				eventButton.active = Keyboard::IsPressed(static_cast<Keyboard::Key>(eventButton.buttonIdentifier));
 				if (eventButton.active && eventButton.extraInfo > 0)
@@ -50,7 +50,7 @@ void EventSystem::Update()
 				}
 				break;
 			}
-			case ButtonActionType::Released:
+			case EventButton::ActionType::Released:
 			{
 				eventButton.active = Keyboard::IsReleased(static_cast<Keyboard::Key>(eventButton.buttonIdentifier));
 				break;
@@ -59,26 +59,26 @@ void EventSystem::Update()
 			}
 			break;
 		}
-		case ButtonType::MouseButton:
+		case EventButton::Type::MouseButton:
 		{
 			switch (eventButton.action)
 			{
-			case ButtonActionType::None:
+			case EventButton::ActionType::None:
 			{
 				eventButton.active = false;
 				break;
 			}
-			case ButtonActionType::Hold:
+			case EventButton::ActionType::Hold:
 			{
 				eventButton.active = Mouse::IsHold(static_cast<Mouse::Button>(eventButton.buttonIdentifier));
 				break;
 			}
-			case ButtonActionType::Pressed:
+			case EventButton::ActionType::Pressed:
 			{
 				eventButton.active = Mouse::IsPressed(static_cast<Mouse::Button>(eventButton.buttonIdentifier));
 				break;
 			}
-			case ButtonActionType::Released:
+			case EventButton::ActionType::Released:
 			{
 				eventButton.active = Mouse::IsReleased(static_cast<Mouse::Button>(eventButton.buttonIdentifier));
 				break;
@@ -87,26 +87,26 @@ void EventSystem::Update()
 			}
 			break;
 		}
-		case ButtonType::JoystickButton:
+		case EventButton::Type::JoystickButton:
 		{
 			switch (eventButton.action)
 			{
-			case ButtonActionType::None:
+			case EventButton::ActionType::None:
 			{
 				eventButton.active = false;
 				break;
 			}
-			case ButtonActionType::Hold:
+			case EventButton::ActionType::Hold:
 			{
 				eventButton.active = Controller::IsButtonHold(eventButton.extraInfo, eventButton.buttonIdentifier);
 				break;
 			}
-			case ButtonActionType::Pressed:
+			case EventButton::ActionType::Pressed:
 			{
 				eventButton.active = Controller::IsButtonPressed(eventButton.extraInfo, eventButton.buttonIdentifier);
 				break;
 			}
-			case ButtonActionType::Released:
+			case EventButton::ActionType::Released:
 			{
 				eventButton.active = Controller::IsButtonReleased(eventButton.extraInfo, eventButton.buttonIdentifier);
 				break;
@@ -118,6 +118,91 @@ void EventSystem::Update()
 		default: assert(false); break;
 		}
 	}
+
+	for (EventAxis& eventAxis : eventSystem.mAxes)
+	{
+		switch (eventAxis.type)
+		{
+		case EventAxis::Type::MouseMovementX:
+		{
+			I32 mvt = Mouse::GetMouseMovement().x;
+			eventAxis.active = mvt != 0;
+			eventAxis.value = static_cast<F32>(mvt);
+			break;
+		}
+		case EventAxis::Type::MouseMovementY:
+		{
+			I32 mvt = Mouse::GetMouseMovement().y;
+			eventAxis.active = mvt != 0;
+			eventAxis.value = static_cast<F32>(mvt);
+			break;
+		}
+		case EventAxis::Type::MouseWheelX:
+		{
+			I32 mvt = Mouse::GetHorizontalWheel();
+			eventAxis.active = mvt != 0;
+			eventAxis.value = static_cast<F32>(mvt);
+			break;
+		}
+		case EventAxis::Type::MouseWheelY:
+		{
+			I32 mvt = Mouse::GetWheel();
+			eventAxis.active = mvt != 0;
+			eventAxis.value = static_cast<F32>(mvt);
+			break;
+		}
+		case EventAxis::Type::JoystickAxis:
+		{
+			eventAxis.active = Controller::HasAxisMoved(eventAxis.extraInfo, eventAxis.axisIdentifier);
+			eventAxis.value = Controller::GetAxis(eventAxis.extraInfo, eventAxis.axisIdentifier);
+			break;
+		}
+		case EventAxis::Type::JoystickBallX:
+		{
+			eventAxis.active = Controller::HasAxisMoved(eventAxis.extraInfo, eventAxis.axisIdentifier);
+			eventAxis.value = Controller::GetBallVector(eventAxis.extraInfo, eventAxis.axisIdentifier).x;
+			break;
+		}
+		case EventAxis::Type::JoystickBallY:
+		{
+			eventAxis.active = Controller::HasAxisMoved(eventAxis.extraInfo, eventAxis.axisIdentifier);
+			eventAxis.value = Controller::GetBallVector(eventAxis.extraInfo, eventAxis.axisIdentifier).y;
+			break;
+		}
+		default: assert(false); break;
+		}
+	}
+}
+
+U32 EventSystem::AddButton(const char* name, EventButton::Type type, U32 buttonIdentifier, U32 extraInfo, EventButton::ActionType action)
+{
+	EventButton eventButton;
+#ifdef ENGINE_DEBUG
+	eventButton.name = name;
+#endif // ENGINE_DEBUG
+	eventButton.hash = HashFct(name);
+	eventButton.active = false;
+	eventButton.action = action;
+	eventButton.type = type;
+	eventButton.buttonIdentifier = buttonIdentifier;
+	eventButton.extraInfo = extraInfo;
+	GetInstance().mButtons.push_back(eventButton);
+	return eventButton.hash;
+}
+
+U32 EventSystem::AddKeyButton(const char* name, Keyboard::Key key, EventButton::ActionType action, U32 modifiers /*= static_cast<U32>(Keyboard::Modifier::None)*/)
+{
+	return AddButton(name, EventButton::Type::KeyboardKey, static_cast<U32>(key), modifiers, action);
+}
+
+U32 EventSystem::AddMouseButton(const char* name, Mouse::Button mouseButton, EventButton::ActionType action)
+{
+	return AddButton(name, EventButton::Type::MouseButton, static_cast<U32>(mouseButton), 0, action);
+}
+
+U32 EventSystem::AddJoystickButton(const char* name, U32 controllerId, U32 buttonIndex, EventButton::ActionType action)
+{
+	return AddButton(name, EventButton::Type::JoystickButton, buttonIndex, controllerId, action);
 }
 
 bool EventSystem::IsButtonActive(const char* name)
@@ -144,54 +229,6 @@ U32 EventSystem::GetButtonCount()
 	return static_cast<U32>(GetInstance().mButtons.size());
 }
 
-U32 EventSystem::AddButton(const char* name, Keyboard::Key key, ButtonActionType action, U32 modifiers /*= static_cast<U32>(Keyboard::Modifier::None)*/)
-{
-	EventButton eventButton;
-#ifdef ENGINE_DEBUG
-	eventButton.name = name;
-#endif // ENGINE_DEBUG
-	eventButton.hash = HashFct(name);
-	eventButton.active = false;
-	eventButton.action = action;
-	eventButton.type = ButtonType::KeyboardKey;
-	eventButton.buttonIdentifier = static_cast<U32>(key);
-	eventButton.extraInfo = static_cast<U32>(modifiers);
-	GetInstance().mButtons.push_back(eventButton);
-	return eventButton.hash;
-}
-
-U32 EventSystem::AddButton(const char* name, Mouse::Button mouseButton, ButtonActionType action)
-{
-	EventButton eventButton;
-#ifdef ENGINE_DEBUG
-	eventButton.name = name;
-#endif // ENGINE_DEBUG
-	eventButton.hash = HashFct(name);
-	eventButton.active = false;
-	eventButton.action = action;
-	eventButton.type = ButtonType::MouseButton;
-	eventButton.buttonIdentifier = static_cast<U32>(mouseButton);
-	eventButton.extraInfo = 0;
-	GetInstance().mButtons.push_back(eventButton);
-	return eventButton.hash;
-}
-
-U32 EventSystem::AddButton(const char* name, U32 controllerId, U32 buttonIndex, ButtonActionType action)
-{
-	EventButton eventButton;
-#ifdef ENGINE_DEBUG
-	eventButton.name = name;
-#endif // ENGINE_DEBUG
-	eventButton.hash = HashFct(name);
-	eventButton.active = false;
-	eventButton.action = action;
-	eventButton.type = ButtonType::JoystickButton;
-	eventButton.buttonIdentifier = buttonIndex;
-	eventButton.extraInfo = controllerId;
-	GetInstance().mButtons.push_back(eventButton);
-	return eventButton.hash;
-}
-
 void EventSystem::RemoveButtonAtIndex(U32 index)
 {
 	EventSystem& eventSystem = GetInstance();
@@ -212,6 +249,90 @@ void EventSystem::RemoveButton(U32 hash)
 		if (eventSystem.mButtons[i].hash == hash)
 		{
 			eventSystem.mButtons.erase(eventSystem.mButtons.begin() + i);
+			return;
+		}
+	}
+}
+
+U32 EventSystem::AddAxis(const char* name, EventAxis::Type type, U32 axisIdentifier /*= 0*/, U32 extraInfo /*= 0*/)
+{
+	EventAxis eventAxis;
+#ifdef ENGINE_DEBUG
+	eventAxis.name = name;
+#endif // ENGINE_DEBUG
+	eventAxis.hash = HashFct(name);
+	eventAxis.active = false;
+	eventAxis.value = 0.0f;
+	eventAxis.type = type;
+	eventAxis.axisIdentifier = axisIdentifier;
+	eventAxis.extraInfo = extraInfo;
+	GetInstance().mAxes.push_back(eventAxis);
+	return eventAxis.hash;
+}
+
+bool EventSystem::IsAxisActive(const char* name)
+{
+	return IsAxisActive(HashFct(name));
+}
+
+bool EventSystem::IsAxisActive(U32 hash)
+{
+	EventSystem& eventSystem = GetInstance();
+	const U32 axisCount = static_cast<U32>(eventSystem.mAxes.size());
+	for (U32 i = 0; i < axisCount; ++i)
+	{
+		if (eventSystem.mAxes[i].hash == hash)
+		{
+			return eventSystem.mAxes[i].active;
+		}
+	}
+	return false;
+}
+
+F32 EventSystem::GetAxisValue(const char* name)
+{
+	return GetAxisValue(HashFct(name));
+}
+
+F32 EventSystem::GetAxisValue(U32 hash)
+{
+	EventSystem& eventSystem = GetInstance();
+	const U32 axisCount = static_cast<U32>(eventSystem.mAxes.size());
+	for (U32 i = 0; i < axisCount; ++i)
+	{
+		if (eventSystem.mAxes[i].hash == hash)
+		{
+			return eventSystem.mAxes[i].value;
+		}
+	}
+	return false;
+}
+
+U32 EventSystem::GetAxisCount()
+{
+	return static_cast<U32>(GetInstance().mAxes.size());
+}
+
+void EventSystem::RemoveAxisAtIndex(U32 index)
+{
+	EventSystem& eventSystem = GetInstance();
+	eventSystem.mAxes.erase(eventSystem.mAxes.begin() + index);
+}
+
+void EventSystem::RemoveAxis(const char* name)
+{
+	RemoveAxis(HashFct(name));
+}
+
+void EventSystem::RemoveAxis(U32 hash)
+{
+	EventSystem& eventSystem = GetInstance();
+	const U32 axisCount = static_cast<U32>(eventSystem.mAxes.size());
+	for (U32 i = 0; i < axisCount; ++i)
+	{
+		if (eventSystem.mAxes[i].hash == hash)
+		{
+			eventSystem.mAxes.erase(eventSystem.mAxes.begin() + i);
 			return;
 		}
 	}

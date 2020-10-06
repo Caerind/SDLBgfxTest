@@ -134,14 +134,17 @@ bool app(Window& window)
 	const bgfx::ViewId mainViewId = 0;
 	const bgfx::ViewId imguiViewId = 250;
 
-	EventSystem::AddButton("moveForward", Keyboard::Key::W, EventSystem::ButtonActionType::Hold);
-	EventSystem::AddButton("moveLeft", Keyboard::Key::A, EventSystem::ButtonActionType::Hold);
-	EventSystem::AddButton("moveBackward", Keyboard::Key::S, EventSystem::ButtonActionType::Hold);
-	EventSystem::AddButton("moveRight", Keyboard::Key::D, EventSystem::ButtonActionType::Hold);
-	EventSystem::AddButton("action", Keyboard::Key::E, EventSystem::ButtonActionType::Pressed);
-	EventSystem::AddButton("jactionP1", 0, 0, EventSystem::ButtonActionType::Pressed);
-	EventSystem::AddButton("jactionP2", 1, 0, EventSystem::ButtonActionType::Pressed);
-	U32 toggleGraphStats = EventSystem::AddButton("toggleGraphStats", Keyboard::Key::F3, EventSystem::ButtonActionType::Pressed, static_cast<U32>(Keyboard::Modifier::Control));
+	// Create button event using generic way 
+	EventSystem::AddButton("moveForward", EventSystem::EventButton::Type::KeyboardKey, static_cast<U32>(Keyboard::Key::W), static_cast<U32>(Keyboard::Modifier::None), EventSystem::EventButton::ActionType::Hold);
+	// Create button event using specific helpers
+	EventSystem::AddKeyButton("moveLeft", Keyboard::Key::A, EventSystem::EventButton::ActionType::Hold);
+	EventSystem::AddKeyButton("moveBackward", Keyboard::Key::S, EventSystem::EventButton::ActionType::Hold);
+	EventSystem::AddKeyButton("moveRight", Keyboard::Key::D, EventSystem::EventButton::ActionType::Hold);
+	EventSystem::AddKeyButton("action", Keyboard::Key::E, EventSystem::EventButton::ActionType::Pressed);
+	EventSystem::AddJoystickButton("jactionP1", 0, 0, EventSystem::EventButton::ActionType::Pressed);
+	EventSystem::AddJoystickButton("jactionP2", 1, 0, EventSystem::EventButton::ActionType::Pressed);
+	// Keep the hash for faster lookups (and no error in the strings)
+	const U32 toggleGraphStats = EventSystem::AddKeyButton("toggleGraphStats", Keyboard::Key::F3, EventSystem::EventButton::ActionType::Pressed, static_cast<U32>(Keyboard::Modifier::Control));
 
 	while (!window.ShouldClose())
 	{
