@@ -7,18 +7,18 @@
 
 #include <bgfx/embedded_shader.h>
 
-#include "fonts/roboto_regular.ttf.h"
-#include "fonts/robotomono_regular.ttf.h"
-#include "fonts/icons_kenney.ttf.h"
-#include "fonts/icons_font_awesome.ttf.h"
+#include "../Resources/roboto_regular.ttf.h"
+#include "../Resources/robotomono_regular.ttf.h"
+#include "../Resources/icons_kenney.ttf.h"
+#include "../Resources/icons_font_awesome.ttf.h"
 
-#include "embedded_shaders/vs_ocornut_imgui.bin.h"
-#include "embedded_shaders/fs_ocornut_imgui.bin.h"
-#include "embedded_shaders/vs_imgui_image.bin.h"
-#include "embedded_shaders/fs_imgui_image.bin.h"
+#include "../Resources/vs_ocornut_imgui.bin.h"
+#include "../Resources/fs_ocornut_imgui.bin.h"
+#include "../Resources/vs_imgui_image.bin.h"
+#include "../Resources/fs_imgui_image.bin.h"
 
-#include "Window/Mouse.hpp"
-#include "Window/Keyboard.hpp"
+#include "../Window/Mouse.hpp"
+#include "../Window/Keyboard.hpp"
 
 namespace NAMESPACE_NAME
 {

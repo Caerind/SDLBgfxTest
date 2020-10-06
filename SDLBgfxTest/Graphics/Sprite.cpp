@@ -73,7 +73,7 @@ void Sprite::Render(const bgfx::ViewId& viewId) const
 		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_BLEND_ALPHA_TO_COVERAGE | BGFX_STATE_MSAA);
 
 		// Specific to this sprite
-		bgfx::setVertexBuffer(viewId, mBuffer);
+		bgfx::setVertexBuffer(0, mBuffer);
 		bgfx::setTexture(0, kUniformTexture, mTexture->GetHandle());
 		kShader.Submit(viewId);
 	}

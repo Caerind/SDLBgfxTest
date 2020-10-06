@@ -278,6 +278,15 @@ void EventSystem::HandleEvent(const SDL_Event& event)
 		Keyboard::HandleEvent(event);
 		break;
 	}
+	case SDL_JOYAXISMOTION:
+	case SDL_JOYBUTTONDOWN:
+	case SDL_JOYBUTTONUP:
+	case SDL_JOYHATMOTION:
+	case SDL_JOYBALLMOTION:
+	{
+		Controller::HandleEvent(event);
+		break;
+	}
 	case SDL_QUIT:
 	{
 		mShouldClose = true;

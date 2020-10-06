@@ -1,12 +1,12 @@
 #pragma once
 
-#include "EngineIntegration.hpp"
+#include "../EngineIntegration.hpp"
 
 #include <bgfx/bgfx.h>
 
 #include "Shader.hpp"
 #include "Texture.hpp"
-#include "Math/Rect.hpp"
+#include "../Math/Rect.hpp"
 
 namespace NAMESPACE_NAME
 {

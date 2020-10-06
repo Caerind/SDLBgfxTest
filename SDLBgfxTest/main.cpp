@@ -2,29 +2,28 @@
 
 #include <bx/timer.h>
 
+#include "Math/Matrix3.hpp"
+#include "Math/Matrix4.hpp"
+
 #include "Window/SDLWrapper.hpp"
 #include "Window/Window.hpp"
 #include "Window/Mouse.hpp"
 #include "Window/Keyboard.hpp"
+#include "Window/Controller.hpp"
 #include "Window/EventSystem.hpp"
 
-#include "BgfxWrapper.hpp"
-#include "ImGuiWrapper.hpp"
-#include "Shader.hpp"
-#include "Sprite.hpp"
-#include "Texture.hpp"
-#include "Camera.hpp"
-#include "Math/Matrix3.hpp"
-#include "Math/Matrix4.hpp"
+#include "Graphics/BgfxWrapper.hpp"
+#include "Graphics/ImGuiWrapper.hpp"
+#include "Graphics/Shader.hpp"
+#include "Graphics/Sprite.hpp"
+#include "Graphics/Texture.hpp"
+#include "Graphics/Camera.hpp"
+
+#include "Game/Cameras.hpp"
 
 using namespace NAMESPACE_NAME;
 
 bool app(Window& window);
-
-void CameraUpdateTotalWar(Camera& camera, F32 deltaTime);
-void CameraUpdateOldFps(Camera& camera, F32 deltaTime);
-void CameraUpdateNewFps(Camera& camera, F32 deltaTime);
-void CameraUpdateMaya(Camera& camera, F32 deltaTime);
 
 void printMtx3(const Matrix3f& m)
 {
@@ -86,6 +85,14 @@ int main(int argc, char** argv)
 
 bool app(Window& window)
 {
+	printf("%d joysticks, %d haptics\n", Controller::GetJoystickCount(), Controller::GetHapticCount());
+
+	for (U32 i = 0; i < Controller::GetJoystickCount(); ++i)
+	{
+		Controller::Rumble(i, 0.25f, 100); // Ensure the controller is working when debugging
+		printf("%s name\n%d axes, %d balls, %d buttons, %d hats\n", Controller::GetControllerName(i), Controller::GetControllerAxisCount(i), Controller::GetControllerBallCount(i), Controller::GetControllerButtonCount(i), Controller::GetControllerHatCount(i));
+	}
+
 	Texture textureA;
 	const char* textureAFilename = "fieldstone-rgba.dds";
 	if (!textureA.Initialize(textureAFilename))
@@ -122,13 +129,14 @@ bool app(Window& window)
 	I64 lastTime = bx::getHPCounter();
 	const double frequency = double(bx::getHPFrequency());
 
-	const bgfx::ViewId mainViewId = 100;
+	const bgfx::ViewId mainViewId = 0;
 	const bgfx::ViewId imguiViewId = 250;
 
 	EventSystem::AddKey("moveForward", Keyboard::Key::W, EventSystem::ButtonActionType::Hold);
 	EventSystem::AddKey("moveLeft", Keyboard::Key::A, EventSystem::ButtonActionType::Hold);
 	EventSystem::AddKey("moveBackward", Keyboard::Key::S, EventSystem::ButtonActionType::Hold);
 	EventSystem::AddKey("moveRight", Keyboard::Key::D, EventSystem::ButtonActionType::Hold);
+	EventSystem::AddKey("action", Keyboard::Key::E, EventSystem::ButtonActionType::Pressed);
 	U32 toggleGraphStats = EventSystem::AddKey("toggleGraphStats", Keyboard::Key::F3, EventSystem::ButtonActionType::Pressed, static_cast<U32>(Keyboard::Modifier::Control));
 
 	while (!window.ShouldClose())
@@ -155,6 +163,15 @@ bool app(Window& window)
 		ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
 
+		if (EventSystem::IsKeyActive("action"))
+		{
+			printf("Action!\n");
+			if (!Controller::Rumble(0, 0.25f, 100))
+			{
+				printf("Can't rumble : %s\n", SDLWrapper::GetError());
+			}
+		}
+
 		// Compute dt
 		const I64 now = bx::getHPCounter();
 		const I64 frameTime = now - lastTime;
@@ -163,7 +180,7 @@ bool app(Window& window)
 
 		spriteBTransform *= Matrix4f::RotationY(180.0f * dt);
 
-		CameraUpdateOldFps(camera, dt);
+		Cameras::CameraUpdateOldFps(camera, dt);
 
 		// Toggle debug stats
 #ifdef ENGINE_DEBUG
@@ -199,139 +216,4 @@ bool app(Window& window)
 	}
 
     return true;
-}
-
-// Inspired by TotalWar controls
-void CameraUpdateTotalWar(Camera& camera, F32 deltaTime)
-{
-	Vector3f movement;
-	bool moved = false;
-
-	const F32 cameraSpeedYWheel = 1.0f;
-	if (Mouse::GetWheel() != 0)
-	{
-		movement.y += cameraSpeedYWheel * Mouse::GetWheel();
-		moved = true;
-	}
-
-	const F32 cameraSpeedZ = 2.0f;
-	const F32 mvtZ = deltaTime * cameraSpeedZ;
-	if (Keyboard::IsHold(Keyboard::Key::Up))
-	{
-		movement.z -= mvtZ;
-		moved = true;
-	}
-	if (Keyboard::IsHold(Keyboard::Key::Down))
-	{
-		movement.z += mvtZ;
-		moved = true;
-	}
-
-	const F32 cameraSpeedX = 3.0f;
-	const F32 mvtX = deltaTime * cameraSpeedX;
-	if (Keyboard::IsHold(Keyboard::Key::Right))
-	{
-		movement.x += mvtX;
-		moved = true;
-	}
-	if (Keyboard::IsHold(Keyboard::Key::Left))
-	{
-		movement.x -= mvtX;
-		moved = true;
-	}
-	
-	if (moved)
-	{
-		camera.Move(movement);
-	}
-}
-
-// Old fps, right/left to yaw
-void CameraUpdateOldFps(Camera& camera, F32 deltaTime)
-{
-	Vector3f direction = camera.GetDirection();
-
-	Vector3f movement;
-	bool moved = false;
-	if (Keyboard::IsHold(Keyboard::Key::Up))
-	{
-		movement += 2.0f * direction * deltaTime;
-		moved = true;
-	}
-	if (Keyboard::IsHold(Keyboard::Key::Down))
-	{
-		movement -= 2.0f * direction * deltaTime;
-		moved = true;
-	}
-	if (moved)
-	{
-		camera.Move(movement);
-	}
-	
-	bool rotated = false;
-	if (Keyboard::IsHold(Keyboard::Key::Right))
-	{
-		direction = Matrix3f::RotationY(90.0f * deltaTime).TransformDirection(direction);
-		rotated = true;
-	}
-	if (Keyboard::IsHold(Keyboard::Key::Left))
-	{
-		direction = Matrix3f::RotationY(-90.0f * deltaTime).TransformDirection(direction);
-		rotated = true;
-	}
-	if (rotated)
-	{
-		camera.SetDirection(direction);
-	}
-}
-
-// "New" fps, yaw & pitch via mouse
-void CameraUpdateNewFps(Camera& camera, F32 deltaTime)
-{
-	Vector3f direction = camera.GetDirection();
-
-	Vector3f movement;
-	bool moved = false;
-	if (Keyboard::IsHold(Keyboard::Key::W))
-	{
-		movement += 2.0f * direction * deltaTime;
-		moved = true;
-	}
-	if (Keyboard::IsHold(Keyboard::Key::S))
-	{
-		movement -= 2.0f * direction * deltaTime;
-		moved = true;
-	}
-	if (Keyboard::IsHold(Keyboard::Key::A))
-	{
-		movement -= 2.0f * direction.CrossProduct(Vector3f::UnitY()) * deltaTime;
-		moved = true;
-	}
-	if (Keyboard::IsHold(Keyboard::Key::D))
-	{
-		movement += 2.0f * direction.CrossProduct(Vector3f::UnitY()) * deltaTime;
-		moved = true;
-	}
-	if (moved)
-	{
-		camera.Move(movement);
-	}
-
-	bool rotated = false;
-
-	F32 yaw = static_cast<F32>(Mouse::GetDeltaPosition().x);
-	if (!Math::Equals(yaw, 0.0f))
-	{
-		yaw *= 20.0f * deltaTime;
-		direction = Matrix3f::RotationY(yaw).TransformDirection(direction);
-		rotated = true;
-	}
-}
-
-void CameraUpdateMaya(Camera& camera, F32 deltaTime)
-{
-	if (Keyboard::IsAltHold())
-	{
-
-	}
 }

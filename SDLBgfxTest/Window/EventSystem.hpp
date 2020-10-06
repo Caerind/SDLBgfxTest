@@ -9,6 +9,7 @@
 
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
+#include "Controller.hpp"
 
 namespace NAMESPACE_NAME
 {

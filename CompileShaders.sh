@@ -34,7 +34,7 @@ mkdir -p build/SDLBgfxTest/shaders/pssl
 mkdir -p build/SDLBgfxTest/shaders/spirv
 
 includepath="bgfx/bgfx/src"
-allfsfiles="`find SDLBgfxTest/shaders -name *.fs`"
+allfsfiles="`find SDLBgfxTest/Shaders -name *.fs`"
 for fsfile in $allfsfiles
 do
     namewoext="`echo $fsfile | cut -f 1 -d '.'`"

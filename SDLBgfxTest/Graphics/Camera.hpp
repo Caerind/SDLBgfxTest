@@ -1,12 +1,12 @@
 #pragma once
 
-#include "EngineIntegration.hpp"
+#include "../EngineIntegration.hpp"
 
 #include <bgfx/bgfx.h>
 
-#include "Math/Vector3.hpp"
-#include "Math/Matrix4.hpp"
-#include "Math/Frustum.hpp"
+#include "../Math/Vector3.hpp"
+#include "../Math/Matrix4.hpp"
+#include "../Math/Frustum.hpp"
 
 namespace NAMESPACE_NAME
 {

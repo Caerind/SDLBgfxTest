@@ -1,10 +1,10 @@
 #pragma once
 
-#include "EngineIntegration.hpp"
+#include "../EngineIntegration.hpp"
 
 #include <bgfx/bgfx.h>
 
-#include "Window/Window.hpp"
+#include "../Window/Window.hpp"
 
 namespace NAMESPACE_NAME
 {
