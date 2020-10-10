@@ -24,6 +24,11 @@ else
     path_shaderc="./build/bgfx/shaderc" # for Linux/Unix GCC users
 fi
 
+if [ ! -x ./build/bgfx/shaderc ]; then
+	echo "You should GenerateProject and compile it first"
+	exit
+fi
+
 mkdir -p build/SDLBgfxTest/shaders
 mkdir -p build/SDLBgfxTest/shaders/dx9
 mkdir -p build/SDLBgfxTest/shaders/dx11
@@ -34,7 +39,7 @@ mkdir -p build/SDLBgfxTest/shaders/pssl
 mkdir -p build/SDLBgfxTest/shaders/spirv
 
 includepath="bgfx/bgfx/src"
-allfsfiles="`find SDLBgfxTest/Shaders -name *.fs`"
+allfsfiles="`find SDLBgfxTest/shaders -name *.fs`"
 for fsfile in $allfsfiles
 do
     namewoext="`echo $fsfile | cut -f 1 -d '.'`"

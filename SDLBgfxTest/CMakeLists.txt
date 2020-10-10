@@ -51,9 +51,9 @@ set(SRC_GRAPHICS
 source_group("Graphics" FILES ${SRC_GRAPHICS})
 
 set(SRC_SHADERS
-	Shaders/sprite.vs
-	Shaders/sprite.fs
-	Shaders/varying.def.sc
+	shaders/sprite.vs
+	shaders/sprite.fs
+	shaders/varying.def.sc
 )
 source_group("Shaders" FILES ${SRC_SHADERS})
 
