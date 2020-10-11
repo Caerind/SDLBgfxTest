@@ -221,11 +221,11 @@ void ImGuiWrapper::BeginFrame(bgfx::ViewId viewId)
 	
 	const Vector2i mousePos = Mouse::GetPositionCurrentWindow();
 	io.MousePos = ImVec2(static_cast<F32>(mousePos.x), static_cast<F32>(mousePos.y));
-	io.MouseDown[0] = Mouse::IsPressed(Mouse::Button::Left);
-	io.MouseDown[1] = Mouse::IsPressed(Mouse::Button::Right);
-	io.MouseDown[2] = Mouse::IsPressed(Mouse::Button::Middle);
-	io.MouseDown[3] = Mouse::IsPressed(Mouse::Button::X1);
-	io.MouseDown[4] = Mouse::IsPressed(Mouse::Button::X2);
+	io.MouseDown[0] = Mouse::IsHold(Mouse::Button::Left);
+	io.MouseDown[1] = Mouse::IsHold(Mouse::Button::Right);
+	io.MouseDown[2] = Mouse::IsHold(Mouse::Button::Middle);
+	io.MouseDown[3] = Mouse::IsHold(Mouse::Button::X1);
+	io.MouseDown[4] = Mouse::IsHold(Mouse::Button::X2);
 	io.MouseWheel = static_cast<float>(Mouse::GetWheel());
 
 	static constexpr U32 keyCount = static_cast<U32>(Keyboard::Key::Count);
