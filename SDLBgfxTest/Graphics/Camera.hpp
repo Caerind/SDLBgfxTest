@@ -61,7 +61,7 @@ public:
 
     // View
 
-    void InitializeView(const Vector3f& pos, const Vector3f& at);
+    void InitializeView(const Vector3f& pos, const Vector3f& direction);
 
 	void LookAt(const Vector3f& at);
     

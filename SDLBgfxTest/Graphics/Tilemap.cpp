@@ -161,6 +161,23 @@ void Tilemap::UpdateTileTexCoords(U32 tileIndex)
 	}
 }
 
+void Tilemap::UpdateVertexBuffer()
+{
+	// TODO : Use dynamic vertex buffer instead ?
+	// TODO : => Give the choise to the user using template boolean parameter
+	if (bgfx::isValid(mVertexBuffer))
+	{
+		bgfx::destroy(mVertexBuffer);
+		mVertexBuffer = BGFX_INVALID_HANDLE;
+	}
+
+	if (mVertices.size() > 0 && mTileset != nullptr)
+	{
+		mVertexBuffer = bgfx::createVertexBuffer(bgfx::makeRef(mVertices.data(), 4 * mSize.x * mSize.y * sizeof(Vertex)), Vertex::kLayout);
+		assert(bgfx::isValid(mVertexBuffer));
+	}
+}
+
 void Tilemap::UpdateIndexBuffer()
 {
 	if (bgfx::isValid(mIndexBuffer))
@@ -169,7 +186,7 @@ void Tilemap::UpdateIndexBuffer()
 		mIndexBuffer = BGFX_INVALID_HANDLE;
 	}
 
-	if (!mSize.IsZero())
+	if (mSize.x > 0 && mSize.y > 0)
 	{
 		const U32 indiceCount = mSize.x * mSize.y * 6;
 		mIndices.resize(indiceCount);
@@ -189,23 +206,6 @@ void Tilemap::UpdateIndexBuffer()
 	else
 	{
 		mIndices.clear();
-	}
-}
-
-void Tilemap::UpdateVertexBuffer()
-{
-	// TODO : Use dynamic vertex buffer instead ?
-	// TODO : => Give the choise to the user using template boolean parameter
-	if (bgfx::isValid(mVertexBuffer))
-	{
-		bgfx::destroy(mVertexBuffer);
-		mVertexBuffer = BGFX_INVALID_HANDLE;
-	}
-
-	if (mVertices.size() > 0 && mTileset != nullptr)
-	{
-		mVertexBuffer = bgfx::createVertexBuffer(bgfx::makeRef(mVertices.data(), 4 * mSize.x * mSize.y * sizeof(Vertex)), Vertex::kLayout);
-		assert(bgfx::isValid(mVertexBuffer));
 	}
 }
 

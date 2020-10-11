@@ -196,10 +196,10 @@ const Matrix4f& Camera::GetProjectionMatrix() const
 	return mProjectionMatrix;
 }
 
-void Camera::InitializeView(const Vector3f& pos, const Vector3f& at)
+void Camera::InitializeView(const Vector3f& pos, const Vector3f& direction)
 {
 	mPosition = pos;
-	LookAt(at);
+	SetDirection(direction);
 }
 
 void Camera::LookAt(const Vector3f& at)

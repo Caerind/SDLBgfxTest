@@ -111,11 +111,12 @@ bool app(Window& window)
 		assert(false);
 	}
 
-	Sprite spriteA;
-	spriteA.SetTexture(textureA);
+	Sprite spriteA1;
+	spriteA1.SetTexture(textureA);
+	Matrix4f spriteA1Transform = Matrix4f::Translation(0.0f, 1.0f, 0.0f);
 	Sprite spriteA2;
 	spriteA2.SetTexture(textureA);
-	Matrix4f spriteATransform = Matrix4f::Translation(1.0f, 1.0f, 0.0f);
+	Matrix4f spriteA2Transform = Matrix4f::Translation(1.0f, 2.0f, 0.0f);
 
 	Sprite spriteB;
 	spriteB.SetTexture(textureB);
@@ -132,11 +133,11 @@ bool app(Window& window)
 	tilemap.SetTile({ 2,1 }, 1);
 	tilemap.SetTile({ 2,2 }, 2);
 	tilemap.SetTile({ 1,2 }, 3);
-	Matrix4f tilemapTransform = Matrix4f::Translation(2.0f, 0.0f, 0.0f);
+	Matrix4f tilemapTransform = Matrix4f::RotationX(90.0f);
 
 	Camera camera;
 	camera.InitializePerspective(80.0f, F32(window.GetWidth()) / F32(window.GetHeight()), 0.1f, 100.0f);
-	camera.InitializeView(Vector3f(0.0f, 1.0f, 5.0f), Vector3f(0.0f, 0.0f, 0.0f));
+	camera.InitializeView(Vector3f(0.0f, 1.0f, 5.0f), Vector3f(0.0f, 0.0f, -1.0f));
 
 	// TODO : Fix me
 	Frustum frustum = camera.CreateFrustum();
@@ -173,6 +174,9 @@ bool app(Window& window)
 		// ImGui
 #ifdef ENGINE_IMGUI
 		ImGuiWrapper::BeginFrame(imguiViewId);
+		ImGui::Begin("HeyImGui");
+		ImGui::Text("HelloWorld");
+		ImGui::End();
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 		ImGuizmo::Manipulate(
@@ -180,7 +184,7 @@ bool app(Window& window)
 			camera.GetProjectionMatrix().GetData(),
 			ImGuizmo::TRANSLATE,
 			ImGuizmo::WORLD,
-			spriteATransform.GetData()
+			tilemapTransform.GetData()
 		);
 		ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
@@ -264,9 +268,10 @@ bool app(Window& window)
 
 			camera.Apply(mainViewId);
 
-			spriteA.Render(mainViewId);
+			bgfx::setTransform(spriteA1Transform.GetData());
+			spriteA1.Render(mainViewId);
 
-			bgfx::setTransform(spriteATransform.GetData());
+			bgfx::setTransform(spriteA2Transform.GetData());
 			spriteA2.Render(mainViewId);
 
 			bgfx::setTransform(spriteBTransform.GetData());

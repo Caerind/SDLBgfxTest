@@ -36,8 +36,8 @@ public:
 private:
 	void UpdateTexCoords();
 	void UpdateTileTexCoords(U32 tileIndex);
-	void UpdateIndexBuffer();
 	void UpdateVertexBuffer();
+	void UpdateIndexBuffer();
 
 private:
 	struct Vertex
