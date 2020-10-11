@@ -19,12 +19,12 @@ else
 fi
 
 if [[ "$platform" == "windows" ]]; then
-    path_shaderc="build/bgfx/Debug/shaderc.exe" # default path for Visual Studio users
+    path_shaderc="./build/bgfx/Debug/shaderc.exe" # default path for Visual Studio users
 else
     path_shaderc="./build/bgfx/shaderc" # for Linux/Unix GCC users
 fi
 
-if [ ! -x ./build/bgfx/shaderc ]; then
+if [ ! -x $path_shaderc ]; then
 	echo "You should GenerateProject and compile it first"
 	exit
 fi

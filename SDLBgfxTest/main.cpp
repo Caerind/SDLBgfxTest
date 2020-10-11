@@ -20,6 +20,7 @@
 #include "Graphics/Camera.hpp"
 #include "Graphics/Tileset.hpp"
 #include "Graphics/Tilemap.hpp"
+#include "Graphics/DebugDraw.hpp"
 
 #include "Game/Cameras.hpp"
 
@@ -144,6 +145,8 @@ bool app(Window& window)
 	printf("(0,0,0) %d==1\n", frustum.Contains(Vector3f::Zero()));
 	printf("(0,0,10) %d==0\n", frustum.Contains(Vector3f(0, 0, 10)));
 
+	DebugDraw debugDraw;
+
 	I64 lastTime = bx::getHPCounter();
 	const double frequency = double(bx::getHPFrequency());
 
@@ -184,7 +187,7 @@ bool app(Window& window)
 			camera.GetProjectionMatrix().GetData(),
 			ImGuizmo::TRANSLATE,
 			ImGuizmo::WORLD,
-			tilemapTransform.GetData()
+			spriteA2Transform.GetData()
 		);
 		ImGuiWrapper::EndFrame();
 #endif // ENGINE_DEBUG
@@ -245,7 +248,7 @@ bool app(Window& window)
 
 		spriteBTransform *= Matrix4f::RotationY(180.0f * dt);
 
-		Cameras::CameraUpdateOldFps(camera, dt);
+		Cameras::CameraUpdateMaya(camera, dt);
 
 		// Toggle debug stats
 #ifdef ENGINE_DEBUG
@@ -254,6 +257,10 @@ bool app(Window& window)
 			BgfxWrapper::ToggleDisplayStats();
 		}
 #endif // ENGINE_DEBUG
+
+		debugDraw.DrawLine(Vector3f::Zero(), camera.GetPosition() - Vector3f::UnitY());
+		debugDraw.DrawCross(Vector3f::Zero());
+		debugDraw.DrawBox({ 1.0f, 0.5f, 1.0f }, { 2.0f, 1.5f, 2.0f }, Colors::Red);
 
 		// Render
 		{
@@ -279,6 +286,8 @@ bool app(Window& window)
 
 			bgfx::setTransform(tilemapTransform.GetData());
 			tilemap.Render(mainViewId);
+
+			debugDraw.Render(mainViewId);
 
 			bgfx::frame();
 		}

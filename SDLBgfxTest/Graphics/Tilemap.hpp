@@ -43,6 +43,7 @@ private:
 	struct Vertex
 	{
 		Vector2f pos;
+		F32 unusedZ{ 0.0f };
 		Vector2f texCoords;
 
 		static bgfx::VertexLayout kLayout;

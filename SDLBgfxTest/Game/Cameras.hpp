@@ -101,27 +101,30 @@ public:
 	static void CameraUpdateNewFps(Camera& camera, F32 deltaTime)
 	{
 		Vector3f direction = camera.GetDirection();
+		Vector3f mvtUnit = direction;
+		mvtUnit.y = 0.0f;
+		mvtUnit.Normalize();
 
 		Vector3f movement;
 		bool moved = false;
 		if (Keyboard::IsHold(Keyboard::Key::W))
 		{
-			movement += 2.0f * direction * deltaTime;
+			movement += 2.0f * mvtUnit * deltaTime;
 			moved = true;
 		}
 		if (Keyboard::IsHold(Keyboard::Key::S))
 		{
-			movement -= 2.0f * direction * deltaTime;
+			movement -= 2.0f * mvtUnit * deltaTime;
 			moved = true;
 		}
 		if (Keyboard::IsHold(Keyboard::Key::A))
 		{
-			movement -= 2.0f * direction.CrossProduct(Vector3f::UnitY()) * deltaTime;
+			movement -= 2.0f * mvtUnit.CrossProduct(Vector3f::UnitY()) * deltaTime;
 			moved = true;
 		}
 		if (Keyboard::IsHold(Keyboard::Key::D))
 		{
-			movement += 2.0f * direction.CrossProduct(Vector3f::UnitY()) * deltaTime;
+			movement += 2.0f * mvtUnit.CrossProduct(Vector3f::UnitY()) * deltaTime;
 			moved = true;
 		}
 		if (moved)
@@ -132,11 +135,28 @@ public:
 		bool rotated = false;
 
 		F32 yaw = static_cast<F32>(Mouse::GetMouseMovement().x);
+		F32 pitch = static_cast<F32>(Mouse::GetMouseMovement().y);
 		if (!Math::Equals(yaw, 0.0f))
 		{
 			yaw *= 20.0f * deltaTime;
 			direction = Matrix3f::RotationY(yaw).TransformDirection(direction);
 			rotated = true;
+		}
+		if (!Math::Equals(pitch, 0.0f))
+		{
+			pitch *= 15.0f * deltaTime;
+			direction = Matrix3f::RotationX(pitch).TransformDirection(direction);
+			rotated = true;
+		}
+
+		if (!Keyboard::IsAltHold())
+		{
+			Mouse::SetPositionCurrentWindow({ 400, 300 });
+
+			if (rotated)
+			{
+				camera.SetDirection(direction);
+			}
 		}
 	}
 
@@ -144,7 +164,59 @@ public:
 	{
 		if (Keyboard::IsAltHold())
 		{
+			Vector3f direction = camera.GetDirection();
+			Vector3f mvtUnit = direction;
+			mvtUnit.y = 0.0f;
+			mvtUnit.Normalize();
 
+			Vector3f movement;
+			bool moved = false;
+			if (Keyboard::IsHold(Keyboard::Key::W))
+			{
+				movement += 2.0f * mvtUnit * deltaTime;
+				moved = true;
+			}
+			if (Keyboard::IsHold(Keyboard::Key::S))
+			{
+				movement -= 2.0f * mvtUnit * deltaTime;
+				moved = true;
+			}
+			if (Keyboard::IsHold(Keyboard::Key::A))
+			{
+				movement -= 2.0f * mvtUnit.CrossProduct(Vector3f::UnitY()) * deltaTime;
+				moved = true;
+			}
+			if (Keyboard::IsHold(Keyboard::Key::D))
+			{
+				movement += 2.0f * mvtUnit.CrossProduct(Vector3f::UnitY()) * deltaTime;
+				moved = true;
+			}
+			if (moved)
+			{
+				camera.Move(movement);
+			}
+
+			bool rotated = false;
+
+			F32 yaw = static_cast<F32>(Mouse::GetMouseMovement().x);
+			F32 pitch = static_cast<F32>(Mouse::GetMouseMovement().y);
+			if (!Math::Equals(yaw, 0.0f))
+			{
+				yaw *= 20.0f * deltaTime;
+				direction = Matrix3f::RotationY(yaw).TransformDirection(direction);
+				rotated = true;
+			}
+			if (!Math::Equals(pitch, 0.0f))
+			{
+				pitch *= 15.0f * deltaTime;
+				direction = Matrix3f::RotationX(pitch).TransformDirection(direction);
+				rotated = true;
+			}
+
+			if (rotated)
+			{
+				camera.SetDirection(direction);
+			}
 		}
 	}
 };

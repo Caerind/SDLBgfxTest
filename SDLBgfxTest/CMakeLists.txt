@@ -37,6 +37,8 @@ set(SRC_GRAPHICS
 	Graphics/BgfxWrapper.cpp 
 	Graphics/Shader.hpp 
 	Graphics/Shader.cpp
+	Graphics/DebugDraw.hpp 
+	Graphics/DebugDraw.cpp
 	Graphics/Texture.hpp
 	Graphics/Texture.cpp
 	Graphics/Sprite.hpp 

@@ -7,6 +7,7 @@
 
 #include "Sprite.hpp"
 #include "Tilemap.hpp"
+#include "DebugDraw.hpp"
 
 namespace NAMESPACE_NAME
 {
@@ -156,7 +157,8 @@ bool BgfxWrapper::Init(Window& window)
     bgfx::setViewRect(kClearView, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));
 
     if (!Sprite::InitializeSprites()
-        || !Tilemap::InitializeTilemaps())
+        || !Tilemap::InitializeTilemaps()
+        || !DebugDraw::InitializeDebugDraws())
     {
         return false;
     }
@@ -176,6 +178,7 @@ bool BgfxWrapper::Release()
 
 	assert(bgfx.mInitialized);
 
+    DebugDraw::ReleaseDebugDraws();
     Tilemap::ReleaseTilemaps();
     Sprite::ReleaseSprites();
 
