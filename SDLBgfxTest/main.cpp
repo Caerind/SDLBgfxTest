@@ -18,6 +18,8 @@
 #include "Graphics/Sprite.hpp"
 #include "Graphics/Texture.hpp"
 #include "Graphics/Camera.hpp"
+#include "Graphics/Tileset.hpp"
+#include "Graphics/Tilemap.hpp"
 
 #include "Game/Cameras.hpp"
 
@@ -118,6 +120,19 @@ bool app(Window& window)
 	Sprite spriteB;
 	spriteB.SetTexture(textureB);
 	Matrix4f spriteBTransform = Matrix4f::Translation(2.0f, 2.0f, 0.0f);
+
+	Tileset tileset;
+	tileset.SetGridSize({ 2,2 });
+	tileset.SetTileSize({ 256, 256 });
+	tileset.SetTexture(textureA);
+	Tilemap tilemap;
+	tilemap.SetTileset(tileset);
+	tilemap.SetSize({ 4,4 });
+	tilemap.SetTile({ 1,1 }, 0);
+	tilemap.SetTile({ 2,1 }, 1);
+	tilemap.SetTile({ 2,2 }, 2);
+	tilemap.SetTile({ 1,2 }, 3);
+	Matrix4f tilemapTransform = Matrix4f::Translation(2.0f, 0.0f, 0.0f);
 
 	Camera camera;
 	camera.InitializePerspective(80.0f, F32(window.GetWidth()) / F32(window.GetHeight()), 0.1f, 100.0f);
@@ -256,6 +271,9 @@ bool app(Window& window)
 
 			bgfx::setTransform(spriteBTransform.GetData());
 			spriteB.Render(mainViewId);
+
+			bgfx::setTransform(tilemapTransform.GetData());
+			tilemap.Render(mainViewId);
 
 			bgfx::frame();
 		}

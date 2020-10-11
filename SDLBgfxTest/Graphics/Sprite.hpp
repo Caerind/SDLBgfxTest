@@ -4,9 +4,9 @@
 
 #include <bgfx/bgfx.h>
 
+#include "../Math/Rect.hpp"
 #include "Shader.hpp"
 #include "Texture.hpp"
-#include "../Math/Rect.hpp"
 
 namespace NAMESPACE_NAME
 {

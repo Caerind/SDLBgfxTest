@@ -69,8 +69,8 @@ void Sprite::Render(const bgfx::ViewId& viewId) const
 	if (bgfx::isValid(mBuffer) && mTexture != nullptr)
 	{
 		// Common to all sprites
+		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_BLEND_ALPHA_TO_COVERAGE);
 		bgfx::setIndexBuffer(kIndexBuffer);
-		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_BLEND_ALPHA_TO_COVERAGE | BGFX_STATE_MSAA);
 
 		// Specific to this sprite
 		bgfx::setVertexBuffer(0, mBuffer);
@@ -95,13 +95,13 @@ void Sprite::Update()
 	const F32 bottom = static_cast<F32>(mTextureRect.Bottom()) * oneOverTexHeight;
 
 	mVertices[0].pos = localBounds.GetCorner(0);
-	mVertices[0].texCoords = Vector2f(left, top);
+	mVertices[0].texCoords.Set(left, top);
 	mVertices[1].pos = localBounds.GetCorner(1);
-	mVertices[1].texCoords = Vector2f(right, top);
+	mVertices[1].texCoords.Set(right, top);
 	mVertices[2].pos = localBounds.GetCorner(2);
-	mVertices[2].texCoords = Vector2f(right, bottom);
+	mVertices[2].texCoords.Set(right, bottom);
 	mVertices[3].pos = localBounds.GetCorner(3);
-	mVertices[3].texCoords = Vector2f(left, bottom);
+	mVertices[3].texCoords.Set(left, bottom);
 
 	// TODO : Use dynamic vertex buffer instead ?
 	// TODO : => Give the choise to the user using template boolean parameter

@@ -47,6 +47,10 @@ set(SRC_GRAPHICS
 	Graphics/Mesh.cpp
 	Graphics/Camera.hpp
 	Graphics/Camera.cpp
+	Graphics/Tileset.hpp
+	Graphics/Tileset.cpp
+	Graphics/Tilemap.hpp
+	Graphics/Tilemap.cpp
 )
 source_group("Graphics" FILES ${SRC_GRAPHICS})
 

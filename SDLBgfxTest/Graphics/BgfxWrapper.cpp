@@ -6,6 +6,7 @@
 #include <bgfx/platform.h>
 
 #include "Sprite.hpp"
+#include "Tilemap.hpp"
 
 namespace NAMESPACE_NAME
 {
@@ -154,7 +155,8 @@ bool BgfxWrapper::Init(Window& window)
     bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, kClearColor, 1.0f, 0);
     bgfx::setViewRect(kClearView, 0, 0, static_cast<uint16_t>(window.GetWidth()), static_cast<uint16_t>(window.GetHeight()));
 
-    if (!Sprite::InitializeSprites())
+    if (!Sprite::InitializeSprites()
+        || !Tilemap::InitializeTilemaps())
     {
         return false;
     }
@@ -174,6 +176,7 @@ bool BgfxWrapper::Release()
 
 	assert(bgfx.mInitialized);
 
+    Tilemap::ReleaseTilemaps();
     Sprite::ReleaseSprites();
 
 	bgfx::shutdown();
