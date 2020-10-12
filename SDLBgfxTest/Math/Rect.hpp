@@ -1,10 +1,8 @@
 #pragma once
 
-#include "../EngineIntegration.hpp"
-
 #include "Vector2.hpp"
 
-namespace NAMESPACE_NAME
+namespace en 
 {
 
 template <typename T>
@@ -17,11 +15,9 @@ public:
 
 	constexpr const Vector2<T>& GetMin() const { return mMin; }
 	constexpr void SetMin(const Vector2<T>& min) { mMin = min; }
-	constexpr void SetMin(T minX, T minY) { mMin.Set(minX, minY); }
-	
+
 	constexpr const Vector2<T>& GetMax() const { return mMax; }
 	constexpr void SetMax(const Vector2<T>& max) { mMax = max; }
-	constexpr void SetMax(T maxX, T maxY) { mMax.Set(maxX, maxY); }
 
 	constexpr T Left() const { return mMin.x; }
 	constexpr T Top() const { return mMin.y; }
@@ -30,10 +26,14 @@ public:
 	constexpr T Width() const { return mMax.x - mMin.x; }
 	constexpr T Height() const { return mMax.y - mMin.y; }
 
-	constexpr Vector2<T> GetCenter() const { return (mMin + mMax) * 0.5f; }
 	constexpr Vector2<T> GetSize() const { return mMax - mMin; }
+	constexpr void SetSize(const Vector2<T>& size) { mMax = mMin + size; }
+
+	constexpr Vector2<T> GetCenter() const { return (mMin + mMax) * 0.5f; }
+	constexpr void SetCenter(const Vector2<T>& center) { const Vector2<T> hs = GetHalfSize(); mMin = center - hs; mMax = center + hs; }
+
 	constexpr Vector2<T> GetHalfSize() const { return (mMax - mMin) * 0.5f; }
-	constexpr T GetArea() const { const Vector2f size = GetSize(); return size.x * size.y; } 
+	constexpr T GetArea() const { const Vector2f size = GetSize(); return size.x * size.y; }
 
 	/*
 	0---1
@@ -67,7 +67,7 @@ public:
 		else
 		{
 			Vector2<T> maxDist(0.0f);
-			
+
 			if (point.x < mMin.x)
 				maxDist.x = mMin.x - point.x;
 			else if (point.x > mMax.x)
@@ -80,7 +80,7 @@ public:
 
 			return maxDist.GetSquaredLength();
 		}
-	}	
+	}
 	inline T GetDistance(const Vector2<T>& point) const
 	{
 		return Math::FastSqrt(GetSquaredDistance(point));
@@ -131,8 +131,12 @@ private:
 	Vector2<T> mMax;
 };
 
-using Rectf = Rect<F32>;
-using Recti = Rect<I32>;
-using Rectu = Rect<U32>;
+typedef Rect<F32> Rectf;
+typedef Rect<I32> Recti;
+typedef Rect<U32> Rectu;
 
-} // namespace NAMESPACE_NAME
+} // namespace en
+
+#ifdef ENLIVE_ENABLE_META
+ENLIVE_DEFINE_TYPE_INFO_TEMPLATE(en::Rect)
+#endif // ENLIVE_ENABLE_META

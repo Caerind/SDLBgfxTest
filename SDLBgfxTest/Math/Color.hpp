@@ -1,8 +1,12 @@
 #pragma once
 
-#include "../EngineIntegration.hpp"
+#include "Math.hpp"
 
-namespace NAMESPACE_NAME
+#ifdef ENLIVE_ENABLE_IMGUI
+#include <imgui/imgui.h>
+#endif // ENLIVE_ENABLE_IMGUI
+
+namespace en
 {
 
 class Color
@@ -10,16 +14,16 @@ class Color
 public:
 	constexpr Color() : r(255), g(255), b(255), a(255) {}
 	constexpr Color(U8 red, U8 green, U8 blue, U8 alpha = 255) : r(red), g(green), b(blue), a(alpha) {}
-	constexpr Color(U8 grey, U8 alpha = 255) : r(grey), g(grey), b(grey), a(alpha) {} 
+	constexpr Color(U8 grey, U8 alpha = 255) : r(grey), g(grey), b(grey), a(alpha) {}
 	constexpr Color(U32 color) : Color() { FromRGBA(color); }
 
 	constexpr U8& operator[](U8 index)
 	{
 		switch (index)
 		{
-			case 0: return r;
-			case 1: return g;
-			case 2: return b;
+		case 0: return r;
+		case 1: return g;
+		case 2: return b;
 		}
 		return a;
 	}
@@ -27,9 +31,9 @@ public:
 	{
 		switch (index)
 		{
-			case 0: return r;
-			case 1: return g;
-			case 2: return b;
+		case 0: return r;
+		case 1: return g;
+		case 2: return b;
 		}
 		return a;
 	}
@@ -47,6 +51,19 @@ public:
 		return *this;
 	}
 
+#ifdef ENLIVE_ENABLE_IMGUI
+	inline ImVec4 ToImGuiColor() const { const F32 factor = 1.0f / 255.0f; return ImVec4(factor * r, factor * g, factor * b, factor * a); }
+	inline Color& FromImGuiColor(const ImVec4& color)
+	{
+		const F32 factor = 255.0f;
+		r = static_cast<U8>(factor * color.x);
+		g = static_cast<U8>(factor * color.y);
+		b = static_cast<U8>(factor * color.z);
+		a = static_cast<U8>(factor * color.w);
+		return *this;
+	}
+#endif // ENLIVE_ENABLE_IMGUI
+
 	constexpr bool operator==(const Color& other) const { return r == other.r && g == other.g && b == other.b && a == other.a; }
 	constexpr bool operator!=(const Color& other) const { return !operator==(other); }
 
@@ -58,7 +75,7 @@ public:
 
 namespace Colors
 {
-	// Basic color
+	// Basic colors
 	static constexpr Color Black{ 0, 0, 0 };
 	static constexpr Color White{ 255, 255, 255 };
 	static constexpr Color Red{ 255, 0, 0 };
@@ -69,7 +86,7 @@ namespace Colors
 	static constexpr Color Cyan{ 0, 255, 255 };
 	static constexpr Color Transparent{ 255, 255, 255, 0 };
 
-	// Standard
+	// Standard colors
 	static constexpr Color Brown{ 128, 80, 32 };
 	static constexpr Color Orange{ 255, 128, 0 };
 	static constexpr Color Pink{ 255, 128, 192 };
@@ -83,7 +100,7 @@ namespace Colors
 	static constexpr Color Mint{ 64, 255, 192 };
 	static constexpr Color Gray{ 128, 128, 128 };
 
-	// Lights
+	// Light colors
 	static constexpr Color LightBlack{ 64, 64, 64 };
 	static constexpr Color LightBlue{ 128, 128, 255 };
 	static constexpr Color LightRed{ 255, 128, 128 };
@@ -104,7 +121,7 @@ namespace Colors
 	static constexpr Color LightMint{ 128, 255, 224 };
 	static constexpr Color LightGray{ 192, 192, 192 };
 
-	// Darks
+	// Dark colors
 	static constexpr Color DarkBlue{ 0, 0, 128 };
 	static constexpr Color DarkRed{ 128, 0, 0 };
 	static constexpr Color DarkMagenta{ 128, 0, 128 };
@@ -124,6 +141,15 @@ namespace Colors
 	static constexpr Color DarkLime{ 64, 128, 0 };
 	static constexpr Color DarkMint{ 32, 128, 96 };
 	static constexpr Color DarkGray{ 64, 64, 64 };
-}
+} // namespace Colors
 
-} // namespace NAMESPACE_NAME
+} // namespace en
+
+#ifdef ENLIVE_ENABLE_META
+ENLIVE_META_CLASS_BEGIN(en::Color)
+	ENLIVE_META_CLASS_MEMBER("r", &en::Color::r),
+	ENLIVE_META_CLASS_MEMBER("g", &en::Color::g),
+	ENLIVE_META_CLASS_MEMBER("b", &en::Color::b),
+	ENLIVE_META_CLASS_MEMBER("a", &en::Color::a)
+ENLIVE_META_CLASS_END()
+#endif // ENLIVE_ENABLE_META

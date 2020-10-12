@@ -2,12 +2,17 @@
 
 #include "../EngineIntegration.hpp"
 
+#ifdef ENLIVE_ENABLE_META
+#include <Enlivengine/System/TypeInfo.hpp>
+#include <Enlivengine/System/Meta.hpp>
+#endif // ENLIVE_ENABLE_META
+
 // TODO : Constexpr Sqrt => InvSqrt, Asin, Acos
+// TODO : Real : Float/Double
+// TODO : See https://github.com/pmttavara/pt_math
+// TODO : See https://github.com/kthohr/gcem
 
-#define ENGINE_DEFAULT_HANDEDNESS Math::Handedness::Right
-#define ENGINE_DEFAULT_UP Vector3f::UnitY()
-
-namespace NAMESPACE_NAME
+namespace en
 {
 
 class Math
@@ -140,8 +145,8 @@ public:
 		const F32 firstPart = sqrRoot * (1.5707963050f - 0.2145988016f * value + 0.0889789874f * x2 - 0.0501743046f * x3 + 0.0308918810f * x4 - 0.01708812556f * x5 + 0.0066700901f * x6 - 0.0012624911f * x7);
 		return sign * (HalfPi - firstPart) * kRadToDeg;
 	}
-	static inline F32 Acos(F32 value) 
-	{ 
+	static inline F32 Acos(F32 value)
+	{
 		return 90.0f - Asin(value);
 	}
 	static constexpr F32 Atan(F32 value)
@@ -289,7 +294,7 @@ public:
 			}
 		}
 	}
-	static constexpr F32 Atan2(F32 x, F32 y) 
+	static constexpr F32 Atan2(F32 x, F32 y)
 	{
 		const F32 ax = (x >= 0.0f) ? x : -x;
 		const F32 signY = (y >= 0.0f) ? 1.0f : -1.0f;
@@ -307,7 +312,7 @@ public:
 		const F32 x14 = x12 * x2;
 		const F32 x16 = x14 * x2;
 		const F32 firstPart = 1.0f - 0.3333314528f * x2 + 0.1999355085f * x4 - 0.1420889944f * x6 + 0.1065626393f * x8 - 0.0752896400f * x10 + 0.0429096138f * x12 - 0.0161657367f * x14 + 0.0028662257f * x16;
-		
+
 		F32 th = kRadToDeg * z * firstPart;
 		if (invert) th = 90.0f - th;
 		if (x < 0.0f) th = 180.0f - th;
@@ -316,7 +321,7 @@ public:
 
 	template <typename T>
 	static constexpr T Ceil(T value)
-	{ 
+	{
 		const T valueWhole = T(static_cast<I32>(value));
 		return valueWhole + T((value > (T(0)) && (value > valueWhole)) ? T(1) : T(0));
 	}
@@ -357,4 +362,4 @@ public:
 	static constexpr bool Equals(U32 x, U32 y) { return x == y; }
 };
 
-} // namespace NAMESPACE_NAME
+} // namespace en

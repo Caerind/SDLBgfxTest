@@ -1,10 +1,8 @@
 #pragma once
 
-#include "../EngineIntegration.hpp"
-
 #include "Vector3.hpp"
 
-namespace NAMESPACE_NAME
+namespace en
 {
 
 class Plane
@@ -24,7 +22,7 @@ public:
 		const Vector3f edge1 = point2 - point1;
 		const Vector3f edge2 = point3 - point1;
 		mNormal = edge1.CrossProduct(edge2).Normalized();
-		mConstant = -mNormal.DotProduct(point1);	
+		mConstant = -mNormal.DotProduct(point1);
 	}
 
 	constexpr const Vector3f& GetNormal() const { return mNormal; }
@@ -33,7 +31,7 @@ public:
 	constexpr F32 GetConstant() const { return mConstant; }
 	constexpr void SetConstant(F32 constant) { mConstant = constant; }
 
-	enum Side : U8
+	enum class Side
 	{
 		Positive,
 		Negative,
@@ -44,15 +42,15 @@ public:
 		const F32 distance = GetDistance(point);
 		if (distance > 0.0f)
 		{
-			return Plane::Positive;
+			return Side::Positive;
 		}
 		else if (distance < 0.0f)
 		{
-			return Plane::Negative;
+			return Side::Negative;
 		}
 		else
 		{
-			return Plane::Both;
+			return Side::Both;
 		}
 	}
 
@@ -67,4 +65,11 @@ private:
 	F32 mConstant;
 };
 
-} // namespace NAMESPACE_NAME
+} // namespace en
+
+#ifdef ENLIVE_ENABLE_META
+ENLIVE_META_CLASS_BEGIN(en::Plane)
+	ENLIVE_META_CLASS_MEMBER("normal", &en::Plane::GetNormal, &en::Plane::SetNormal),
+	ENLIVE_META_CLASS_MEMBER("constant", &en::Plane::GetConstant, &en::Plane::SetConstant)
+ENLIVE_META_CLASS_END()
+#endif // ENLIVE_ENABLE_META

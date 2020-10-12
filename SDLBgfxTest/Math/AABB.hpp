@@ -1,10 +1,8 @@
 #pragma once
 
-#include "../EngineIntegration.hpp"
+#include <Enlivengine/Math/Vector3.hpp>
 
-#include "Vector3.hpp"
-
-namespace NAMESPACE_NAME 
+namespace en 
 {
 
 class AABB
@@ -16,15 +14,13 @@ public:
 
 	constexpr const Vector3f& GetMin() const { return mMin; }
 	constexpr void SetMin(const Vector3f& min) { mMin.Set(min); }
-	constexpr void SetMin(F32 x, F32 y, F32 z) { mMin.Set(x, y, z); }
 
 	constexpr const Vector3f& GetMax() const { return mMax; }
 	constexpr void SetMax(const Vector3f& max) { mMax.Set(max); }
-	constexpr void SetMax(F32 x, F32 y, F32 z) { mMax.Set(x, y, z); }
 
 	constexpr void Set(const Vector3f& min, const Vector3f& max) { mMin = min; mMax = max; }
 	constexpr void Set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) { mMin.Set(minX, minY, minZ); mMax.Set(maxX, maxY, maxZ); }
-	constexpr void SetCenteredBox(const Vector3f& center, const Vector3f& halfSize) { mMin = center - halfSize; mMax = center +  halfSize; }
+	constexpr void SetCenteredBox(const Vector3f& center, const Vector3f& halfSize) { mMin = center - halfSize; mMax = center + halfSize; }
 	constexpr void SetCenteredBox(F32 cX, F32 cY, F32 cZ, F32 hsX, F32 hsY, F32 hsZ) { mMin.Set(cX - hsX, cY - hsY, cZ - hsZ); mMax.Set(cX + hsX, cY + hsY, cZ + hsZ); }
 
 	constexpr Vector3f GetCenter() const { return (mMin + mMax) * 0.5f; }
@@ -46,24 +42,24 @@ public:
 	{
 		switch (index)
 		{
-			case 0:
-				return mMin;
-			case 1:
-				return Vector3f(mMin.x, mMax.y, mMin.z);
-			case 2:
-				return Vector3f(mMax.x, mMax.y, mMin.z);
-			case 3:
-				return Vector3f(mMax.x, mMin.y, mMin.z);
-			case 4:
-				return Vector3f(mMax.x, mMin.y, mMax.z);
-			case 5:
-				return Vector3f(mMin.x, mMin.y, mMax.z);
-			case 6:
-				return Vector3f(mMin.x, mMax.y, mMax.z);
-			case 7:
-				return mMax;
-			default:
-				break;
+		case 0:
+			return mMin;
+		case 1:
+			return Vector3f(mMin.x, mMax.y, mMin.z);
+		case 2:
+			return Vector3f(mMax.x, mMax.y, mMin.z);
+		case 3:
+			return Vector3f(mMax.x, mMin.y, mMin.z);
+		case 4:
+			return Vector3f(mMax.x, mMin.y, mMax.z);
+		case 5:
+			return Vector3f(mMin.x, mMin.y, mMax.z);
+		case 6:
+			return Vector3f(mMin.x, mMax.y, mMax.z);
+		case 7:
+			return mMax;
+		default:
+			break;
 		}
 		return Vector3f();
 	}
@@ -111,7 +107,7 @@ public:
 	{
 		return point >= mMin && point <= mMax;
 	}
-	
+
 	constexpr bool Contains(const AABB& box) const
 	{
 		return box.mMin >= mMin && box.mMax <= mMax;
@@ -147,4 +143,11 @@ private:
 	Vector3f mMax;
 };
 
-} // namespace NAMESPACE_NAME
+} // namespace en
+
+#ifdef ENLIVE_ENABLE_META
+ENLIVE_META_CLASS_BEGIN(en::AABB)
+	ENLIVE_META_CLASS_MEMBER("min", &en::AABB::GetMin, &en::AABB::SetMin),
+	ENLIVE_META_CLASS_MEMBER("max", &en::AABB::GetMax, &en::AABB::SetMax)
+ENLIVE_META_CLASS_END()
+#endif // ENLIVE_ENABLE_META

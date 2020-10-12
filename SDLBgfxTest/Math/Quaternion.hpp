@@ -1,9 +1,11 @@
 #pragma once
 
-#include "../EngineIntegration.hpp"
+#include <Enlivengine/Math/Math.hpp>
+
+// TODO : constexpr
 
 /*
-namespace NAMESPACE_NAME
+namespace en
 {
 
 template <typename T> class Matrix3;
@@ -772,4 +774,6 @@ typedef Quaternion<F32> Quaternionf;
 typedef Quaternionf quat; // GLSL-like
 
 } // namespace en
+
+ENLIVE_DEFINE_TYPE_INFO_TEMPLATE(en::Quaternion)
 */

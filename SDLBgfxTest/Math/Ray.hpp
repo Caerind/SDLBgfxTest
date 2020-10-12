@@ -1,12 +1,10 @@
 #pragma once
 
-#include "../EngineIntegration.hpp"
+#include <Enlivengine/Math/Vector3.hpp>
 
-#include "Vector3.hpp"
-
-namespace NAMESPACE_NAME
+namespace en
 {
-	
+
 class Ray
 {
 public:
@@ -15,14 +13,11 @@ public:
 
 	constexpr const Vector3f& GetOrigin() const { return mOrigin; }
 	constexpr void SetOrigin(const Vector3f& origin) { mOrigin = origin; }
-	constexpr void SetOrigin(F32 x, F32 y, F32 z) { mOrigin.Set(x, y, z); }
 
 	constexpr const Vector3f& GetDirection() const { return mDirection; }
 	constexpr void SetDirection(const Vector3f& direction) { mDirection = direction; }
-	constexpr void SetDirection(F32 x, F32 y, F32 z) { mDirection.Set(x, y, z); }
 
 	constexpr Vector3f GetPoint(F32 t) const { return mOrigin + mDirection * t; }
-	constexpr Vector3f operator*(F32 t) const { return mOrigin + mDirection * t; }
 
 	constexpr bool operator==(const Ray& other) const { return mOrigin == other.mOrigin && mDirection == other.mDirection; }
 	constexpr bool operator!=(const Ray& other) const { return !operator==(other); }
@@ -32,4 +27,11 @@ private:
 	Vector3f mDirection;
 };
 
-} // namespace NAMESPACE_NAME
+} // namespace en
+
+#ifdef ENLIVE_ENABLE_META
+ENLIVE_META_CLASS_BEGIN(en::Ray)
+	ENLIVE_META_CLASS_MEMBER("origin", &en::Ray::GetOrigin, &en::Ray::SetOrigin),
+	ENLIVE_META_CLASS_MEMBER("direction", &en::Ray::GetDirection, &en::Ray::SetDirection)
+ENLIVE_META_CLASS_END()
+#endif // ENLIVE_ENABLE_META

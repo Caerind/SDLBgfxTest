@@ -1,8 +1,11 @@
 #pragma once
 
-#include "../EngineIntegration.hpp"
-
 #include "Vector3.hpp"
+
+// TODO : Constexpr memcpy, swap
+
+namespace en
+{
 
 // 
 // Matrix layout :    
@@ -12,11 +15,6 @@
 // 6 7 8     a31 a32 a33
 //
 
-// TODO : Constexpr memcpy, swap
-
-namespace NAMESPACE_NAME
-{
-
 template <typename T>
 class Matrix3
 {
@@ -25,7 +23,7 @@ public:
 	static constexpr I32 Columns{ 3 };
 	static constexpr I32 Elements{ Rows * Columns };
 
-	constexpr Matrix3() : data{ T(1), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(1)} {}
+	constexpr Matrix3() : data{ T(1), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(1) } {}
 	constexpr Matrix3(const Matrix3<T>& m) : data{ m.data[0], m.data[1], m.data[2], m.data[3], m.data[4], m.data[5], m.data[6], m.data[7], m.data[8] } {}
 	template <typename U>
 	constexpr Matrix3(const Matrix3<U>& m) : data{ static_cast<T>(m.data[0]), static_cast<T>(m.data[1]), static_cast<T>(m.data[2]), static_cast<T>(m.data[3]), static_cast<T>(m.data[4]), static_cast<T>(m.data[5]), static_cast<T>(m.data[6]), static_cast<T>(m.data[7]), static_cast<T>(m.data[8]) } {}
@@ -33,7 +31,7 @@ public:
 	constexpr Matrix3(const T& a11, const T& a12, const T& a13, const T& a21, const T& a22, const T& a23, const T& a31, const T& a32, const T& a33) : data{ a11, a12, a13, a21, a22, a23, a31, a32, a33 } {}
 	~Matrix3() = default;
 
-	constexpr Matrix3<T>& Set(const Matrix3<T>& m)
+	constexpr Matrix3<T>& Set(const Matrix3<T> & m)
 	{
 		data[0] = m.data[0];
 		data[1] = m.data[1];
@@ -47,7 +45,7 @@ public:
 		return *this;
 	}
 	template <typename U>
-	constexpr Matrix3<T>& Set(const Matrix3<U>& m)
+	constexpr Matrix3<T>& Set(const Matrix3<U> & m)
 	{
 		data[0] = static_cast<T>(m.data[0]);
 		data[1] = static_cast<T>(m.data[1]);
@@ -60,7 +58,7 @@ public:
 		data[8] = static_cast<T>(m.data[8]);
 		return *this;
 	}
-	constexpr Matrix3<T>& Set(const T* a)
+	constexpr Matrix3<T>& Set(const T * a)
 	{
 		data[0] = a[0];
 		data[1] = a[1];
@@ -73,7 +71,7 @@ public:
 		data[8] = a[8];
 		return *this;
 	}
-	constexpr Matrix3<T>& Set(const T& a11, const T& a12, const T& a13, const T& a21, const T& a22, const T& a23, const T& a31, const T& a32, const T& a33)
+	constexpr Matrix3<T>& Set(const T & a11, const T & a12, const T & a13, const T & a21, const T & a22, const T & a23, const T & a31, const T & a32, const T & a33)
 	{
 		data[0] = a11;
 		data[1] = a12;
@@ -94,14 +92,14 @@ public:
 
 	constexpr Vector3<T> GetColumn(U32 columnIndex) const { return Vector3<T>(data[columnIndex], data[columnIndex + Columns], data[columnIndex + Columns * 2]); }
 	constexpr Vector3<T> GetRow(U32 rowIndex) const { const U32 r = Columns * rowIndex; return Vector3<T>(data[r], data[r + 1], data[r + 2]); }
-	constexpr Matrix3<T>& SetColumn(U32 columnIndex, const Vector3<T>& column)
+	constexpr Matrix3<T>& SetColumn(U32 columnIndex, const Vector3<T> & column)
 	{
 		data[columnIndex] = column.x;
 		data[columnIndex + Columns * 1] = column.y;
 		data[columnIndex + Columns * 2] = column.z;
 		return *this;
 	}
-	constexpr Matrix3<T>& SetRow(U32 rowIndex, const Vector3<T>& row)
+	constexpr Matrix3<T>& SetRow(U32 rowIndex, const Vector3<T> & row)
 	{
 		const U32 r = Columns * rowIndex;
 		data[r] = row.x;
@@ -110,13 +108,13 @@ public:
 		return *this;
 	}
 
-	constexpr Matrix3<T>& operator=(const Matrix3<T>& m) { return Set(m); }
+	constexpr Matrix3<T>& operator=(const Matrix3<T> & m) { return Set(m); }
 	constexpr const Matrix3<T>& operator+() const { return *this; }
 	constexpr Matrix3<T> operator-() const { return Matrix3<T>(-data[0], -data[1], -data[2], -data[3], -data[4], -data[5], -data[6], -data[7], -data[8]); }
 
-	constexpr Matrix3<T> operator+(const Matrix3<T>& m) const { return Matrix3<T>(data[0] + m.data[0], data[1] + m.data[1], data[2] + m.data[2], data[3] + m.data[3], data[4] + m.data[4], data[5] + m.data[5], data[6] + m.data[6], data[7] + m.data[7], data[8] + m.data[8]); }
-	constexpr Matrix3<T> operator-(const Matrix3<T>& m) const { return Matrix3<T>(data[0] - m.data[0], data[1] - m.data[1], data[2] - m.data[2], data[3] - m.data[3], data[4] - m.data[4], data[5] - m.data[5], data[6] - m.data[6], data[7] - m.data[7], data[8] - m.data[8]); }
-	constexpr Matrix3<T> operator*(const Matrix3<T>& m) const
+	constexpr Matrix3<T> operator+(const Matrix3<T> & m) const { return Matrix3<T>(data[0] + m.data[0], data[1] + m.data[1], data[2] + m.data[2], data[3] + m.data[3], data[4] + m.data[4], data[5] + m.data[5], data[6] + m.data[6], data[7] + m.data[7], data[8] + m.data[8]); }
+	constexpr Matrix3<T> operator-(const Matrix3<T> & m) const { return Matrix3<T>(data[0] - m.data[0], data[1] - m.data[1], data[2] - m.data[2], data[3] - m.data[3], data[4] - m.data[4], data[5] - m.data[5], data[6] - m.data[6], data[7] - m.data[7], data[8] - m.data[8]); }
+	constexpr Matrix3<T> operator*(const Matrix3<T> & m) const
 	{
 		Matrix3<T> out;
 		const Vector3<T> r0(GetRow(0));
@@ -136,9 +134,9 @@ public:
 		out.data[8] = c2.DotProduct(r2);
 		return out;
 	}
-	constexpr Matrix3<T>& operator+=(const Matrix3<T>& m) { data[0] += m.data[0]; data[1] += m.data[1]; data[2] += m.data[2]; data[3] += m.data[3]; data[4] += m.data[4]; data[5] += m.data[5]; data[6] += m.data[6]; data[7] += m.data[7]; data[8] += m.data[8]; return *this; }
-	constexpr Matrix3<T>& operator-=(const Matrix3<T>& m) { data[0] -= m.data[0]; data[1] -= m.data[1]; data[2] -= m.data[2]; data[3] -= m.data[3]; data[4] -= m.data[4]; data[5] -= m.data[5]; data[6] -= m.data[6]; data[7] -= m.data[7]; data[8] -= m.data[8]; return *this; }
-	constexpr Matrix3<T>& operator*=(const Matrix3<T>& m)
+	constexpr Matrix3<T>& operator+=(const Matrix3<T> & m) { data[0] += m.data[0]; data[1] += m.data[1]; data[2] += m.data[2]; data[3] += m.data[3]; data[4] += m.data[4]; data[5] += m.data[5]; data[6] += m.data[6]; data[7] += m.data[7]; data[8] += m.data[8]; return *this; }
+	constexpr Matrix3<T>& operator-=(const Matrix3<T> & m) { data[0] -= m.data[0]; data[1] -= m.data[1]; data[2] -= m.data[2]; data[3] -= m.data[3]; data[4] -= m.data[4]; data[5] -= m.data[5]; data[6] -= m.data[6]; data[7] -= m.data[7]; data[8] -= m.data[8]; return *this; }
+	constexpr Matrix3<T>& operator*=(const Matrix3<T> & m)
 	{
 		const Vector3<T> r0(GetRow(0));
 		const Vector3<T> r1(GetRow(1));
@@ -158,12 +156,12 @@ public:
 		return *this;
 	}
 
-	constexpr Matrix3<T> operator*(const T& s) const { return Matrix3<T>(data[0] * s, data[1] * s, data[2] * s, data[3] * s, data[4] * s, data[5] * s, data[6] * s, data[7] * s, data[8] * s); }
-	constexpr Matrix3<T> operator/(const T& s) const { const T inv = T(1) / s;  return Matrix3<T>(data[0] * inv, data[1] * inv, data[2] * inv, data[3] * inv, data[4] * inv, data[5] * inv, data[6] * inv, data[7] * inv, data[8] * inv); }
-	constexpr Matrix3<T>& operator*=(const T& s) { data[0] *= s; data[1] *= s; data[2] *= s; data[3] *= s; data[4] *= s; data[5] *= s; data[6] *= s; data[7] *= s; data[8] *= s; return *this; }
-	constexpr Matrix3<T>& operator/=(const T& s) { const T inv = T(1) / s; data[0] *= inv; data[1] *= inv; data[2] *= inv; data[3] *= inv; data[4] *= inv; data[5] *= inv; data[6] *= inv; data[7] *= inv; data[8] *= inv; return *this; }
+	constexpr Matrix3<T> operator*(const T & s) const { return Matrix3<T>(data[0] * s, data[1] * s, data[2] * s, data[3] * s, data[4] * s, data[5] * s, data[6] * s, data[7] * s, data[8] * s); }
+	constexpr Matrix3<T> operator/(const T & s) const { const T inv = T(1) / s;  return Matrix3<T>(data[0] * inv, data[1] * inv, data[2] * inv, data[3] * inv, data[4] * inv, data[5] * inv, data[6] * inv, data[7] * inv, data[8] * inv); }
+	constexpr Matrix3<T>& operator*=(const T & s) { data[0] *= s; data[1] *= s; data[2] *= s; data[3] *= s; data[4] *= s; data[5] *= s; data[6] *= s; data[7] *= s; data[8] *= s; return *this; }
+	constexpr Matrix3<T>& operator/=(const T & s) { const T inv = T(1) / s; data[0] *= inv; data[1] *= inv; data[2] *= inv; data[3] *= inv; data[4] *= inv; data[5] *= inv; data[6] *= inv; data[7] *= inv; data[8] *= inv; return *this; }
 
-	constexpr Vector3<T> TransformDirection(const Vector3<T>& direction) const
+	constexpr Vector3<T> TransformDirection(const Vector3<T> & direction) const
 	{
 		Vector3<T> out;
 		out.x = GetColumn(0).DotProduct(direction);
@@ -172,7 +170,7 @@ public:
 		return out;
 	}
 
-	constexpr bool operator==(const Matrix3<T>& m) const
+	constexpr bool operator==(const Matrix3<T> & m) const
 	{
 		return Math::Equals(data[0], m.data[0])
 			&& Math::Equals(data[1], m.data[1])
@@ -184,7 +182,7 @@ public:
 			&& Math::Equals(data[7], m.data[7])
 			&& Math::Equals(data[8], m.data[8]);
 	}
-	constexpr bool operator!=(const Matrix3<T>& m) const { return !operator==(m); }
+	constexpr bool operator!=(const Matrix3<T> & m) const { return !operator==(m); }
 	constexpr bool IsIdentity() const { return operator==(Identity()); }
 
 	constexpr bool IsOrthonormal() const
@@ -290,12 +288,12 @@ public:
 	}
 	constexpr Matrix3<T> Transposed() const { return Matrix3<T>(data[0], data[3], data[6], data[1], data[4], data[7], data[2], data[5], data[8]); }
 
-	static constexpr Matrix3<T> RotationX(const T& angle) { return RotationX(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
-	static constexpr Matrix3<T> RotationY(const T& angle) { return RotationY(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
-	static constexpr Matrix3<T> RotationZ(const T& angle) { return RotationZ(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
-	static constexpr Matrix3<T> RotationX(const Vector2<T>& v) { return Matrix3<T>(T(1), T(0), T(0), T(0), v.x, -v.y, T(0), v.y, v.x); }
-	static constexpr Matrix3<T> RotationY(const Vector2<T>& v) { return Matrix3<T>(v.x, T(0), v.y, T(0), T(1), T(0), -v.y, T(0), v.x); }
-	static constexpr Matrix3<T> RotationZ(const Vector2<T>& v) { return Matrix3<T>(v.x, -v.y, T(0), v.y, v.x, T(0), T(0), T(0), T(1)); }
+	static constexpr Matrix3<T> RotationX(const T & angle) { return RotationX(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
+	static constexpr Matrix3<T> RotationY(const T & angle) { return RotationY(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
+	static constexpr Matrix3<T> RotationZ(const T & angle) { return RotationZ(Vector2<T>(Math::Cos(angle), Math::Sin(angle))); }
+	static constexpr Matrix3<T> RotationX(const Vector2<T> & v) { return Matrix3<T>(T(1), T(0), T(0), T(0), v.x, -v.y, T(0), v.y, v.x); }
+	static constexpr Matrix3<T> RotationY(const Vector2<T> & v) { return Matrix3<T>(v.x, T(0), v.y, T(0), T(1), T(0), -v.y, T(0), v.x); }
+	static constexpr Matrix3<T> RotationZ(const Vector2<T> & v) { return Matrix3<T>(v.x, -v.y, T(0), v.y, v.x, T(0), T(0), T(0), T(1)); }
 
 	static constexpr Matrix3<T> Zero() { return Matrix3<T>(T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0), T(0)); }
 	static constexpr Matrix3<T> Identity() { return Matrix3<T>(T(1), T(0), T(0), T(0), T(1), T(0), T(0), T(0), T(1)); }
@@ -306,9 +304,13 @@ public:
 private:
 	T data[9];
 };
- 
-using Matrix3f = Matrix3<F32>;
 
-using mat3 = Matrix3f; // GLSL-like
+typedef Matrix3<F32> Matrix3f;
 
-} // namespace NAMESPACE_NAME
+typedef Matrix3f mat3; // GLSL-like
+
+} // namespace en
+
+#ifdef ENLIVE_ENABLE_META
+ENLIVE_DEFINE_TYPE_INFO_TEMPLATE(en::Matrix3)
+#endif // ENLIVE_ENABLE_META
